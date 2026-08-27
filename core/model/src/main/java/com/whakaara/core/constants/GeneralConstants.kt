@@ -19,4 +19,7 @@ object GeneralConstants {
 
     const val MAIN_ACTIVITY = "com.app.whakaara.activities.MainActivity"
     const val FULL_SCREEN_NOTIFICATION_ACTIVITY = "com.app.whakaara.activities.FullScreenNotificationActivity"
+
+    const val LOCATION_ALARM_TRIGGER_ACTION = "com.whakaara.LOCATION_ALARM_TRIGGER"
+    const val LOCATION_ALARM_RECEIVER = "com.whakaara.feature.alarm.receiver.LocationAlarmReceiver"
 }

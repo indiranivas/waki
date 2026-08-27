@@ -23,11 +23,16 @@ class DatabaseModule {
         context,
         AlarmDatabase::class.java,
         "alarm_database"
-    ).build()
+    ).fallbackToDestructiveMigration()
+        .build()
 
     @Provides
     @Singleton
     fun provideAlarmDao(alarmDatabase: AlarmDatabase) = alarmDatabase.alarmDao()
+
+    @Provides
+    @Singleton
+    fun provideLocationAlarmDao(alarmDatabase: AlarmDatabase) = alarmDatabase.locationAlarmDao()
 
     @Provides
     @Singleton

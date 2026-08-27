@@ -32,8 +32,8 @@ import com.whakaara.core.designsystem.theme.Spacings.space20
 import com.whakaara.core.designsystem.theme.Spacings.space200
 import com.whakaara.core.designsystem.theme.Spacings.spaceMedium
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
-import com.whakaara.core.designsystem.theme.lightBlueAnimation
+import com.whakaara.core.designsystem.theme.WakiTheme
+import com.whakaara.core.designsystem.theme.wakiOrange
 import net.vbuild.verwoodpages.onboarding.R
 
 @Composable
@@ -56,7 +56,7 @@ fun WelcomeOnboarding(
                 Modifier
                     .size(space200)
                     .clip(Shapes.medium)
-                    .background(color = lightBlueAnimation),
+                    .background(color = wakiOrange.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
@@ -68,15 +68,18 @@ fun WelcomeOnboarding(
         }
         Text(
             modifier = Modifier.width(300.dp),
-            text = stringResource(id = R.string.onboarding_welcome_title),
+            text = "Welcome to Waki 👋",
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.displaySmall,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
         )
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             modifier = Modifier.width(300.dp),
-            text = stringResource(id = R.string.onboarding_welcome_sub_text),
+            text = "Your smart alarm that understands time, place and context.",
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodySmall
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -85,7 +88,7 @@ fun WelcomeOnboarding(
 @ThemePreviews
 @FontScalePreviews
 fun WelcomeOnboardingPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         WelcomeOnboarding()
     }
 }

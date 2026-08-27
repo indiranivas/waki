@@ -21,17 +21,18 @@ class AlarmMediaServiceReceiver : HiltBroadcastReceiver() {
         super.onReceive(context, intent)
         val alarmId = intent.getStringExtra(NotificationUtilsConstants.INTENT_ALARM_ID) ?: return
         val alarmType = intent.getIntExtra(NotificationUtilsConstants.NOTIFICATION_TYPE, -1)
+        if (alarmType == -1) return
 
-        if (alarmType == -1) {
+        if (alarmType == NotificationUtilsConstants.NOTIFICATION_TYPE_LOCATION_ALARM) {
+            context.stopService(Intent(context, AlarmMediaService::class.java))
             return
-        } else {
-            goAsync {
-                try {
-                    repository.triggerDeleteAlarmById(alarmId)
-                    context.stopService(Intent(context, AlarmMediaService::class.java))
-                } catch (exception: Exception) {
-                    logD(message = "failed to delete alarm: $alarmId", throwable = exception)
-                }
+        }
+        goAsync {
+            try {
+                repository.triggerDeleteAlarmById(alarmId)
+                context.stopService(Intent(context, AlarmMediaService::class.java))
+            } catch (exception: Exception) {
+                logD(message = "failed to delete alarm: $alarmId", throwable = exception)
             }
         }
     }

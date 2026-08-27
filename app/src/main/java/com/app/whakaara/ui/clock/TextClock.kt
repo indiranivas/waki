@@ -9,7 +9,7 @@ import com.app.whakaara.R
 import com.whakaara.core.constants.DateUtilsConstants
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.model.preferences.TimeFormat
 
 @Composable
@@ -41,7 +41,7 @@ fun TextClock(timeFormat: TimeFormat) {
 @ThemePreviews
 @FontScalePreviews
 fun TextClockPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         TextClock(
             timeFormat = TimeFormat.TWENTY_FOUR_HOURS
         )

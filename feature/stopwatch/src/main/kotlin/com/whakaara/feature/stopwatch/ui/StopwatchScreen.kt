@@ -3,7 +3,7 @@ package com.whakaara.feature.stopwatch.ui
 import androidx.compose.runtime.Composable
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.model.stopwatch.StopwatchState
 
 @Composable
@@ -27,7 +27,7 @@ fun StopwatchScreen(
 @ThemePreviews
 @FontScalePreviews
 fun StopwatchScreenPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         StopwatchScreen(
             stopwatchState = StopwatchState(),
             onStart = {},

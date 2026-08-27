@@ -27,7 +27,7 @@ import com.whakaara.core.designsystem.theme.Spacings.space20
 import com.whakaara.core.designsystem.theme.Spacings.spaceMedium
 import com.whakaara.core.designsystem.theme.Spacings.spaceNone
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.model.stopwatch.Lap
 import com.whakaara.model.stopwatch.StopwatchState
 
@@ -186,7 +186,7 @@ fun LandscapeStopwatchLayout(
 @ThemePreviews
 @FontScalePreviews
 fun StopwatchPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         Stopwatch(
             stopwatchState = StopwatchState(
                 lapList = mutableListOf(

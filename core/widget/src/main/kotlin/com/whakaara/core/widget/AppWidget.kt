@@ -96,7 +96,7 @@ class AppWidget : GlanceAppWidget() {
                 if (deserializedBackgroundColour.isNotBlank()) {
                     Gson().fromJson(deserializedBackgroundColour, Color::class.java)
                 } else {
-                    Color(appContext.getColor(R.color.dark_green))
+                    Color(LocalContext.current.getColor(com.whakaara.core.widget.R.color.waki_neutral))
                 }
             val textColour =
                 if (deserializedTextColour.isNotBlank()) {

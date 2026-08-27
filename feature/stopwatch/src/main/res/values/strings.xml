@@ -6,6 +6,7 @@
     <string name="notification_sub_text_paused">Paused</string>
 
     <string name="stopwatch_notification_sub_text">Elapsed time</string>
+    <string name="stopwatch_notification_title">Stopwatch</string>
 
     <string name="stopwatch_header_lap">Lap</string>
     <string name="stopwatch_header_total_time">Total time</string>

@@ -43,6 +43,11 @@ uiGraphicsAndroid = "1.7.8"
 ui = "1.7.8"
 kover = "0.7.5"
 adaptiveAndroid = "1.1.0"
+osmdroid = "6.1.18"
+playServicesLocation = "21.3.0"
+retrofit = "2.11.0"
+gsonConverter = "2.11.0"
+hyperislandKit = "0.4.4"
 
 [libraries]
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
@@ -102,6 +107,7 @@ jetbrains-kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "k
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanistPermissions"}
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+hyperisland-kit = { group = "io.github.d4viddf", name = "hyperisland_kit", version.ref = "hyperislandKit" }
 compose-settings-m3 = { group = "com.github.alorma", name = "compose-settings-ui-m3", version.ref = "composeSettingsM3" }
 compose-material3-datetime-pickers = { group = "com.marosseleng.android", name = "compose-material3-datetime-pickers", version.ref = "timePickerVersion" }
 dokar3-bottomsheet = { group = "io.github.dokar3", name = "sheets", version.ref = "dokar3" }
@@ -112,6 +118,11 @@ lottie = { group = "com.airbnb.android", name = "lottie-compose", version.ref = 
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+osmdroid = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "gsonConverter" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "jetbrainsKotilnxCoroutines" }
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }

@@ -23,7 +23,7 @@ import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.Spacings.space200
 import com.whakaara.core.designsystem.theme.Spacings.space5
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 
 @Composable
 fun ColourPicker(
@@ -74,7 +74,7 @@ fun PreviewColourPicker() {
         }
     }
 
-    WhakaaraTheme {
+    WakiTheme {
         ColourPicker(
             alpha = alphaBackground,
             red = redBackground,

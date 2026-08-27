@@ -16,6 +16,7 @@ import com.whakaara.core.PendingIntentUtils
 import com.whakaara.core.constants.DateUtilsConstants
 import com.whakaara.core.constants.GeneralConstants
 import com.whakaara.core.constants.NotificationUtilsConstants
+import com.whakaara.core.hyperisland.WakiHyperIsland
 import com.whakaara.core.di.ApplicationScope
 import com.whakaara.core.di.IoDispatcher
 import com.whakaara.core.di.MainDispatcher
@@ -176,16 +177,20 @@ class TimerViewModel @Inject constructor(
                 isTimerActive = false,
                 currentTime = GeneralConstants.ZERO_MILLIS,
                 inputHours = DateUtilsConstants.TIMER_INPUT_INITIAL_VALUE,
-                inputMinutes = DateUtilsConstants.TIMER_INPUT_INITIAL_VALUE,
+                inputMinutes = "25",
                 inputSeconds = DateUtilsConstants.TIMER_INPUT_INITIAL_VALUE,
                 isStart = true,
                 progress = GeneralConstants.STARTING_CIRCULAR_PROGRESS,
-                time = DateUtilsConstants.TIMER_STARTING_FORMAT,
+                time = "00:25:00",
                 millisecondsFromTimerInput = GeneralConstants.ZERO_MILLIS
             )
         }
         preferencesDatastore.saveTimerData(
-            state = TimerStateDataStore()
+            state = TimerStateDataStore(
+                inputHours = DateUtilsConstants.TIMER_INPUT_INITIAL_VALUE,
+                inputMinutes = "25",
+                inputSeconds = DateUtilsConstants.TIMER_INPUT_INITIAL_VALUE,
+            )
         )
     }
 
@@ -211,6 +216,43 @@ class TimerViewModel @Inject constructor(
                 )
             }
             startTimer()
+        }
+    }
+
+    /** Adds minutes to a running or paused timer (mockup "Add time"). */
+    fun addTime(minutes: Int = 1) {
+        val state = timerState.value
+        if (!state.isTimerActive && !state.isTimerPaused) return
+
+        val extraMs = minutes.coerceAtLeast(1) * 60_000L
+        val newCurrent = state.currentTime + extraMs
+        val baseTotal = state.millisecondsFromTimerInput.coerceAtLeast(state.currentTime)
+        val newTotal = baseTotal + extraMs
+
+        countDownTimerUtil.cancel()
+        cancelTimerAlarm()
+
+        val hours = (newCurrent / 3_600_000).toInt()
+        val mins = ((newCurrent % 3_600_000) / 60_000).toInt()
+        val secs = ((newCurrent % 60_000) / 1000).toInt()
+
+        _timerState.update {
+            it.copy(
+                currentTime = newCurrent,
+                millisecondsFromTimerInput = newTotal,
+                progress = (newCurrent.toFloat() / newTotal.toFloat()).coerceIn(0f, 1f),
+                time = DateUtils.formatTimeForTimer(millis = newCurrent),
+                inputHours = String.format(java.util.Locale.ROOT, "%02d", hours),
+                inputMinutes = String.format(java.util.Locale.ROOT, "%02d", mins),
+                inputSeconds = String.format(java.util.Locale.ROOT, "%02d", secs),
+            )
+        }
+
+        if (state.isTimerActive) {
+            val endAt = Calendar.getInstance().timeInMillis + newCurrent
+            createTimerNotification(milliseconds = endAt)
+            startCountDownTimer(timeToCountDown = newCurrent, totalForProgress = newTotal)
+            startTimerNotificationCountdown(milliseconds = endAt)
         }
     }
 
@@ -318,14 +360,15 @@ class TimerViewModel @Inject constructor(
         ).any { it.toIntOrNull()?.let { num -> num > 0 } == true }
     }
 
-    private fun startCountDownTimer(timeToCountDown: Long) {
+    private fun startCountDownTimer(timeToCountDown: Long, totalForProgress: Long = timeToCountDown) {
+        val progressTotal = totalForProgress.coerceAtLeast(1L)
         countDownTimerUtil.countdown(
             period = timeToCountDown,
             onTickAction = { millisUntilFinished ->
                 _timerState.update {
                     it.copy(
                         currentTime = millisUntilFinished,
-                        progress = millisUntilFinished.toFloat() / timeToCountDown,
+                        progress = millisUntilFinished.toFloat() / progressTotal.toFloat(),
                         time = DateUtils.formatTimeForTimer(
                             millis = millisUntilFinished
                         )
@@ -339,11 +382,11 @@ class TimerViewModel @Inject constructor(
                         isTimerActive = false,
                         currentTime = GeneralConstants.ZERO_MILLIS,
                         inputHours = DateUtilsConstants.TIMER_INPUT_INITIAL_VALUE,
-                        inputMinutes = DateUtilsConstants.TIMER_INPUT_INITIAL_VALUE,
+                        inputMinutes = "25",
                         inputSeconds = DateUtilsConstants.TIMER_INPUT_INITIAL_VALUE,
                         isStart = true,
                         progress = GeneralConstants.STARTING_CIRCULAR_PROGRESS,
-                        time = DateUtilsConstants.TIMER_STARTING_FORMAT,
+                        time = "00:25:00",
                         millisecondsFromTimerInput = GeneralConstants.ZERO_MILLIS
                     )
                 }
@@ -429,31 +472,40 @@ class TimerViewModel @Inject constructor(
                 intent = stopTimerReceiverIntent,
                 flag = PendingIntent.FLAG_UPDATE_CURRENT
             )
+        val title = app.applicationContext.getString(R.string.timer_notification_title_active)
+        val pauseLabel = app.applicationContext.getString(R.string.notification_timer_pause_action_label)
+        val stopLabel = app.applicationContext.getString(R.string.notification_timer_stop_action_label)
+        val remainingMs = (milliseconds - System.currentTimeMillis()).coerceAtLeast(0L)
+        val remainingLabel = DateUtils.formatTimeForTimer(millis = remainingMs)
+
         timerNotificationBuilder.clearActions()
-        notificationManager.notify(
-            NotificationUtilsConstants.TIMER_NOTIFICATION_ID,
-            timerNotificationBuilder.apply {
-                setWhen(milliseconds)
-                setUsesChronometer(true)
-                setChronometerCountDown(true)
-                setAutoCancel(false)
-                setTimeoutAfter(milliseconds - System.currentTimeMillis())
-                setCategory(NotificationCompat.CATEGORY_ALARM)
-                setOngoing(true)
-                setContentTitle(app.applicationContext.getString(R.string.timer_notification_title_active))
-                setSubText(app.applicationContext.getString(R.string.timer_notification_sub_text_active))
-                addAction(
-                    0,
-                    app.applicationContext.getString(R.string.notification_timer_pause_action_label),
-                    pauseTimerReceiverPendingIntent
-                )
-                addAction(
-                    0,
-                    app.applicationContext.getString(R.string.notification_timer_stop_action_label),
-                    stopTimerReceiverPendingIntent
-                )
-            }.build()
+        WakiHyperIsland.clearFocusExtras(timerNotificationBuilder)
+        val notificationBuilder = timerNotificationBuilder.apply {
+            setWhen(milliseconds)
+            setShowWhen(true)
+            setUsesChronometer(true)
+            setChronometerCountDown(true)
+            setAutoCancel(false)
+            setTimeoutAfter(remainingMs)
+            setOnlyAlertOnce(true)
+            setCategory(NotificationCompat.CATEGORY_ALARM)
+            setOngoing(true)
+            setContentTitle(title)
+            setContentText(remainingLabel)
+            setSubText(app.applicationContext.getString(R.string.timer_notification_sub_text_active))
+            addAction(0, pauseLabel, pauseTimerReceiverPendingIntent)
+            addAction(0, stopLabel, stopTimerReceiverPendingIntent)
+        }
+        WakiHyperIsland.applyCountdown(
+            context = app.applicationContext,
+            builder = notificationBuilder,
+            label = title,
+            endTimeMillis = milliseconds,
+            totalDurationMs = remainingMs,
+            primary = WakiHyperIsland.IslandAction("pause", pauseLabel, pauseTimerReceiverPendingIntent),
+            secondary = WakiHyperIsland.IslandAction("stop", stopLabel, stopTimerReceiverPendingIntent),
         )
+        notificationManager.notify(NotificationUtilsConstants.TIMER_NOTIFICATION_ID, notificationBuilder.build())
     }
 
     private fun pauseTimerNotificationCountdown() {
@@ -479,28 +531,36 @@ class TimerViewModel @Inject constructor(
                 flag = PendingIntent.FLAG_UPDATE_CURRENT
             )
 
-        timerNotificationBuilder.clearActions()
+        val title = app.applicationContext.getString(R.string.timer_notification_title_paused)
+        val remainingLabel = DateUtils.formatTimeForTimer(millis = timerState.value.currentTime)
+        val playLabel = app.applicationContext.getString(R.string.notification_timer_play_action_label)
+        val stopLabel = app.applicationContext.getString(R.string.notification_timer_stop_action_label)
 
-        notificationManager.notify(
-            NotificationUtilsConstants.TIMER_NOTIFICATION_ID,
-            timerNotificationBuilder.apply {
-                setWhen(System.currentTimeMillis())
-                setUsesChronometer(false)
-                setChronometerCountDown(false)
-                setContentTitle(app.applicationContext.getString(R.string.timer_notification_title_paused))
-                setSubText(app.applicationContext.getString(R.string.notification_sub_text_paused))
-                addAction(
-                    0,
-                    app.applicationContext.getString(R.string.notification_timer_play_action_label),
-                    playTimerReceiverPendingIntent
-                )
-                addAction(
-                    0,
-                    app.applicationContext.getString(R.string.notification_timer_stop_action_label),
-                    stopTimerReceiverPendingIntent
-                )
-            }.build()
+        timerNotificationBuilder.clearActions()
+        WakiHyperIsland.clearFocusExtras(timerNotificationBuilder)
+        val notificationBuilder = timerNotificationBuilder.apply {
+            setWhen(System.currentTimeMillis())
+            setShowWhen(false)
+            setUsesChronometer(false)
+            setChronometerCountDown(false)
+            setOnlyAlertOnce(true)
+            setOngoing(true)
+            setContentTitle(title)
+            setContentText(remainingLabel)
+            setSubText(app.applicationContext.getString(R.string.notification_sub_text_paused))
+            addAction(0, playLabel, playTimerReceiverPendingIntent)
+            addAction(0, stopLabel, stopTimerReceiverPendingIntent)
+        }
+        WakiHyperIsland.applyStatic(
+            context = app.applicationContext,
+            builder = notificationBuilder,
+            title = title,
+            content = remainingLabel,
+            business = "waki_timer_paused",
+            primary = WakiHyperIsland.IslandAction("play", playLabel, playTimerReceiverPendingIntent),
+            secondary = WakiHyperIsland.IslandAction("stop", stopLabel, stopTimerReceiverPendingIntent),
         )
+        notificationManager.notify(NotificationUtilsConstants.TIMER_NOTIFICATION_ID, notificationBuilder.build())
     }
 
     private fun cancelTimerAlarm() {

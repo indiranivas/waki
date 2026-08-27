@@ -12,18 +12,23 @@ android {
 
 dependencies {
     // Modules
-    modules(Modules.coreCommon, Modules.coreDesignSystem)
+    modules(Modules.coreCommon, Modules.coreDesignSystem, Modules.coreData)
 
     // androidx libs
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.lifecycle.service)
 
+    implementation(libs.play.services.location)
+    implementation(libs.osmdroid)
+
     implementation(libs.accompanist.permissions)
     implementation(libs.compose.material3.datetime.pickers)
     implementation(libs.dokar3.bottomsheet)
     implementation(libs.chargemap.numberpicker)
     implementation(libs.gson)
+
+    implementation(libs.androidx.work.runtime.ktx)
 
     testImplementation(libs.junit)
 

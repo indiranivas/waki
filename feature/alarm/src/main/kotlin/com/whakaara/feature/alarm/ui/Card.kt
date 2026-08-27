@@ -12,10 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.outlined.AutoDelete
-import androidx.compose.material.icons.outlined.Repeat
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -35,23 +35,24 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.unit.dp
 import com.dokar.sheets.BottomSheet
 import com.dokar.sheets.rememberBottomSheetState
+import com.whakaara.core.designsystem.WakiCard
+import com.whakaara.core.designsystem.WakiTimeDisplay
 import com.whakaara.core.designsystem.theme.AlarmPreviewProvider
 import com.whakaara.core.designsystem.theme.FontScalePreviews
-import com.whakaara.core.designsystem.theme.Spacings.space10
-import com.whakaara.core.designsystem.theme.Spacings.space20
-import com.whakaara.core.designsystem.theme.Spacings.space28
-import com.whakaara.core.designsystem.theme.Spacings.space80
-import com.whakaara.core.designsystem.theme.Spacings.spaceMedium
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.feature.alarm.R
 import com.whakaara.feature.alarm.utils.GeneralUtils.Companion.showToast
 import com.whakaara.model.alarm.Alarm
 import com.whakaara.model.preferences.TimeFormat
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
+import java.time.format.TextStyle
 import java.util.Calendar
+import java.util.Locale
 
 @Composable
 fun Card(
@@ -83,61 +84,56 @@ fun Card(
         timeToAlarm = getInitialTimeToAlarm(valueSlider, alarm.date)
     }
 
-    ElevatedCard(
-        shape = com.whakaara.core.designsystem.theme.Shapes.extraLarge,
+    WakiCard(
         modifier = modifier
-            .fillMaxWidth()
-            .height(space80)
-            .clip(com.whakaara.core.designsystem.theme.Shapes.extraLarge)
+            .padding(vertical = 8.dp)
             .clickable {
                 scope.launch { sheetState.expand() }
             }
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(start = space28, end = space28),
-                verticalArrangement = Arrangement.Center
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        modifier = Modifier.alpha(alpha = alpha),
-                        text = alarm.subTitle.filterNot { it.isWhitespace() },
-                        style = MaterialTheme.typography.headlineSmall
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    WakiTimeDisplay(
+                        time = alarm.subTitle.filter { it.isDigit() || it == ':' },
+                        amPm = alarm.subTitle.filter { it.isLetter() }
                     )
-
-                    if (alarm.repeatDaily) {
-                        Icon(
-                            modifier = Modifier.padding(start = space10).size(spaceMedium),
-                            imageVector = Icons.Outlined.Repeat,
-                            contentDescription = stringResource(id = R.string.card_repeat_daily_icon_content_description)
-                        )
-                    } else if (alarm.deleteAfterGoesOff) {
-                        Icon(
-                            modifier = Modifier.padding(start = space10).size(spaceMedium),
-                            imageVector = Icons.Outlined.AutoDelete,
-                            contentDescription = stringResource(id = R.string.card_alarm_single_shot_content_description)
-                        )
-                    }
                 }
                 Text(
-                    modifier = Modifier.alpha(alpha = alpha),
+                    text = alarm.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    modifier = Modifier.alpha(alpha)
+                )
+
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.alpha(alpha)) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = null,
+                        modifier = Modifier.size(12.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = getRepeatText(alarm),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Text(
                     text = timeToAlarm,
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.alpha(alpha).padding(top = 4.dp)
                 )
             }
 
-            Spacer(Modifier.weight(1f))
-
             Switch(
-                modifier = Modifier
-                    .padding(end = space20)
-                    .testTag("alarm switch"),
                 checked = valueSlider,
                 onCheckedChange = {
                     if (!it) {
@@ -170,13 +166,25 @@ fun Card(
     }
 }
 
+fun getRepeatText(alarm: Alarm): String {
+    val days = alarm.daysOfWeek
+    return when {
+        alarm.repeatDaily || days.size == 7 -> "Everyday"
+        days.isEmpty() -> "Tomorrow"
+        days.size == 5 && !days.contains(5) && !days.contains(6) -> "Weekdays"
+        else -> days.sorted().joinToString(" ") {
+            DayOfWeek.of(if (it == 0) 7 else it).getDisplayName(TextStyle.SHORT, Locale.getDefault())
+        }
+    }
+}
+
 @Composable
 @ThemePreviews
 @FontScalePreviews
 fun CardPreview(
     @PreviewParameter(AlarmPreviewProvider::class) alarm: Alarm
 ) {
-    WhakaaraTheme {
+    WakiTheme {
         Card(
             alarm = alarm,
             timeFormat = TimeFormat.TWENTY_FOUR_HOURS,

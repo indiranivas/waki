@@ -13,7 +13,7 @@
     <string name="onboarding_notification_button_not_enabled">Enable notifications</string>
     <string name="onboarding_notification_title">Notifications</string>
     <string name="onboarding_sub_text">This app requires permission to send you notifications!</string>
-    <string name="onboarding_welcome_title">Welcome to whakaara</string>
-    <string name="onboarding_welcome_sub_text">This screen will guide you through the most important setup steps</string>
-    <string name="onboarding_welcome_icon_description">whakaara app icon</string>
+    <string name="onboarding_welcome_title">Welcome to Waki</string>
+    <string name="onboarding_welcome_sub_text">Smart alarms. Right on time.</string>
+    <string name="onboarding_welcome_icon_description">Waki app icon</string>
 </resources>

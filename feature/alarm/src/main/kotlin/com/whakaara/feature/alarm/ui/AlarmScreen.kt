@@ -5,7 +5,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import com.whakaara.core.designsystem.theme.AlarmPreviewProvider
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.model.alarm.Alarm
 import com.whakaara.model.preferences.PreferencesState
 import java.util.Calendar
@@ -39,7 +39,7 @@ fun AlarmScreen(
 fun AlarmScreenPreview(
     @PreviewParameter(AlarmPreviewProvider::class) alarm: Alarm
 ) {
-    WhakaaraTheme {
+    WakiTheme {
         AlarmScreen(
             alarms = listOf(alarm),
             preferencesState = PreferencesState(),

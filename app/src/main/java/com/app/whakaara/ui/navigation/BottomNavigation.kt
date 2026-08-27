@@ -12,7 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.whakaara.core.RootScreen
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 
 @Composable
 fun BottomNavigation(
@@ -70,7 +70,7 @@ fun NavController.navigateToRootScreen(rootScreen: RootScreen) {
 @ThemePreviews
 @FontScalePreviews
 fun BottomNavigationPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         BottomNavigation(
             navController = rememberNavController(),
             currentSelectedScreen = RootScreen.Alarm

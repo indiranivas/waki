@@ -4,6 +4,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import com.whakaara.core.designsystem.navigation.wakiTabComposable
 import com.whakaara.core.LeafScreen
 import com.whakaara.onboarding.OnboardingRoute
 
@@ -14,7 +15,7 @@ fun NavController.navigateToOnboarding(navOptions: NavOptions? = null) {
 fun NavGraphBuilder.onboardingScreen(
     navigateHome: () -> Unit
 ) {
-    composable(
+    wakiTabComposable(
         route = LeafScreen.Onboarding.route
     ) {
         OnboardingRoute(

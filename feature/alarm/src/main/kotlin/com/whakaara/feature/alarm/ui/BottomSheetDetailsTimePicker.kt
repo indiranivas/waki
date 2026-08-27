@@ -11,7 +11,7 @@ import com.chargemap.compose.numberpicker.HoursNumberPicker
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.Spacings.spaceLarge
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.feature.alarm.HoursUpdateEvent
 
 @Composable
@@ -38,7 +38,7 @@ fun BottomSheetTimePicker(
 @ThemePreviews
 @FontScalePreviews
 fun BottomSheetTimePickerPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         BottomSheetTimePicker(
             updatePickerValue = HoursUpdateEvent(
                 value = FullHours(

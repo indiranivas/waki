@@ -38,7 +38,12 @@ import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.Spacings.space100
 import com.whakaara.core.designsystem.theme.Spacings.spaceMedium
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.WakiCard
+import com.whakaara.core.designsystem.theme.WakiTheme
+import com.whakaara.core.designsystem.WakiSection
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.unit.dp
 import com.whakaara.core.widget.AppWidgetReceiver
 import com.whakaara.model.preferences.GradualSoundDuration
 import com.whakaara.model.preferences.Preferences
@@ -87,241 +92,251 @@ fun AlarmSettings(
         }
     )
 
-    Text(
-        modifier = Modifier.padding(start = spaceMedium, top = spaceMedium, bottom = spaceMedium),
-        style = MaterialTheme.typography.titleMedium,
-        text = stringResource(id = R.string.settings_screen_alarm_settings_title)
-    )
-
-    SettingsMenuLink(
-        modifier = Modifier.height(space100),
-        icon = {
-            Icon(
-                imageVector = Icons.Default.NotificationsActive,
-                contentDescription = stringResource(id = R.string.settings_screen_ringtone_selection_icon)
-            )
-        },
-        title = {
-            Text(text = stringResource(id = R.string.settings_screen_ringtone_alarm_title))
-        },
-        subtitle = {
-            Text(text = "${stringResource(id = R.string.settings_screen_ringtone_subtitle)} ${context.getNameFromUri(currentRingtoneUri)}")
-        },
-        onClick = {
-            ringtonePicker.launch(ringtoneSelectionIntent)
-        }
-    )
-
-    SettingsListDropdown(
-        modifier = Modifier
-            .height(space100)
-            .testTag("alarm gradual dropdown"),
-        state = rememberIntSettingState(defaultValue = preferencesState.preferences.gradualSoundDuration.ordinal),
-        title = { Text(text = stringResource(id = R.string.settings_screen_gradual_volume_increase_title)) },
-        subtitle = { Text(text = stringResource(id = R.string.settings_screen_gradual_volume_increase_subtitle)) },
-        items = GradualSoundDuration.entries.map { context.getString(it.getStringResource(it.ordinal)) },
-        onItemSelected = { int, _ ->
-            val selection = GradualSoundDuration.fromOrdinalInt(value = int)
-            if (selection != preferencesState.preferences.gradualSoundDuration) {
-                updatePreferences(
-                    preferencesState.preferences.copy(
-                        gradualSoundDuration = selection
+    WakiSection(title = stringResource(id = R.string.settings_screen_alarm_settings_title)) {
+        WakiCard {
+            SettingsMenuLink(
+                modifier = Modifier.height(space100),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.NotificationsActive,
+                        contentDescription = stringResource(id = R.string.settings_screen_ringtone_selection_icon)
                     )
-                )
-            }
-        }
-    )
-
-    SettingsSwitch(
-        modifier = Modifier.height(space100),
-        state = rememberBooleanSettingState(preferencesState.preferences.filteredAlarmList),
-        title = { Text(text = stringResource(id = R.string.settings_screen_sort_alarm_list_title)) },
-        subtitle = { Text(text = stringResource(id = R.string.settings_screen_sort_alarm_list_sub_title)) },
-        onCheckedChange = {
-            updatePreferences(
-                preferencesState.preferences.copy(
-                    filteredAlarmList = it
-                )
+                },
+                title = {
+                    Text(text = stringResource(id = R.string.settings_screen_ringtone_alarm_title))
+                },
+                subtitle = {
+                    Text(text = "${stringResource(id = R.string.settings_screen_ringtone_subtitle)} ${context.getNameFromUri(currentRingtoneUri)}")
+                },
+                onClick = {
+                    ringtonePicker.launch(ringtoneSelectionIntent)
+                }
             )
-        }
-    )
 
-    SettingsSwitch(
-        modifier = Modifier.height(space100),
-        state = rememberBooleanSettingState(preferencesState.preferences.isVibrateEnabled),
-        title = { Text(text = stringResource(id = R.string.settings_screen_vibrate_title)) },
-        subtitle = { Text(text = stringResource(id = R.string.settings_screen_vibrate_subtitle)) },
-        onCheckedChange = {
-            updatePreferences(
-                preferencesState.preferences.copy(
-                    isVibrateEnabled = it
-                )
+            SettingsListDropdown(
+                modifier = Modifier
+                    .height(space100)
+                    .testTag("alarm gradual dropdown"),
+                state = rememberIntSettingState(defaultValue = preferencesState.preferences.gradualSoundDuration.ordinal),
+                title = { Text(text = stringResource(id = R.string.settings_screen_gradual_volume_increase_title)) },
+                subtitle = { Text(text = stringResource(id = R.string.settings_screen_gradual_volume_increase_subtitle)) },
+                items = GradualSoundDuration.entries.map { context.getString(it.getStringResource(it.ordinal)) },
+                onItemSelected = { int, _ ->
+                    val selection = GradualSoundDuration.fromOrdinalInt(value = int)
+                    if (selection != preferencesState.preferences.gradualSoundDuration) {
+                        updatePreferences(
+                            preferencesState.preferences.copy(
+                                gradualSoundDuration = selection
+                            )
+                        )
+                    }
+                }
             )
-        }
-    )
 
-    SettingsListDropdown(
-        modifier = Modifier
-            .height(space100)
-            .testTag(tag = "alarm vibrate drop down"),
-        enabled = preferencesState.preferences.isVibrateEnabled,
-        state = rememberIntSettingState(defaultValue = preferencesState.preferences.vibrationPattern.value),
-        title = { Text(text = stringResource(id = R.string.settings_screen_vibrate_pattern_title)) },
-        items = VibrationPattern.entries.map { context.getString(it.getStringResource(it.ordinal)) },
-        onItemSelected = { int, _ ->
-            val selection = VibrationPattern.fromOrdinalInt(value = int)
-            val vibrationEffect = createWaveForm(selection = selection, repeat = SINGLE)
-            val attributes = VibrationAttributes.Builder().apply {
-                setUsage(VibrationAttributes.USAGE_NOTIFICATION)
-            }.build()
-            vibrator.vibrate(vibrationEffect, attributes)
-            if (selection != preferencesState.preferences.vibrationPattern) {
-                updatePreferences(
-                    preferencesState.preferences.copy(
-                        vibrationPattern = selection
+            SettingsSwitch(
+                modifier = Modifier.height(space100),
+                state = rememberBooleanSettingState(preferencesState.preferences.isVibrateEnabled),
+                title = { Text(text = stringResource(id = R.string.settings_screen_vibrate_title)) },
+                subtitle = { Text(text = stringResource(id = R.string.settings_screen_vibrate_subtitle)) },
+                onCheckedChange = {
+                    updatePreferences(
+                        preferencesState.preferences.copy(
+                            isVibrateEnabled = it
+                        )
                     )
-                )
-            }
-        }
-    )
+                }
+            )
 
-    SettingsSwitch(
-        modifier = Modifier.height(space100),
-        title = { Text(text = stringResource(id = R.string.settings_screen_snooze_title)) },
-        subtitle = { Text(text = stringResource(id = R.string.settings_screen_snooze_subtitle)) },
-        state = rememberBooleanSettingState(preferencesState.preferences.isSnoozeEnabled),
-        onCheckedChange = {
-            updatePreferences(
-                preferencesState.preferences.copy(
-                    isSnoozeEnabled = it
-                )
+            SettingsListDropdown(
+                modifier = Modifier
+                    .height(space100)
+                    .testTag(tag = "alarm vibrate drop down"),
+                enabled = preferencesState.preferences.isVibrateEnabled,
+                state = rememberIntSettingState(defaultValue = preferencesState.preferences.vibrationPattern.value),
+                title = { Text(text = stringResource(id = R.string.settings_screen_vibrate_pattern_title)) },
+                items = VibrationPattern.entries.map { context.getString(it.getStringResource(it.ordinal)) },
+                onItemSelected = { int, _ ->
+                    val selection = VibrationPattern.fromOrdinalInt(value = int)
+                    val vibrationEffect = createWaveForm(selection = selection, repeat = SINGLE)
+                    val attributes = VibrationAttributes.Builder().apply {
+                        setUsage(VibrationAttributes.USAGE_NOTIFICATION)
+                    }.build()
+                    vibrator.vibrate(vibrationEffect, attributes)
+                    if (selection != preferencesState.preferences.vibrationPattern) {
+                        updatePreferences(
+                            preferencesState.preferences.copy(
+                                vibrationPattern = selection
+                            )
+                        )
+                    }
+                }
             )
         }
-    )
 
-    SettingsListDropdown(
-        modifier = Modifier.height(space100),
-        enabled = preferencesState.preferences.isSnoozeEnabled,
-        state = rememberIntSettingState(defaultValue = preferencesState.preferences.snoozeTime.ordinal),
-        title = { Text(text = stringResource(id = R.string.settings_screen_snooze_duration_title)) },
-        items = SettingsTime.entries.map { context.getString(it.getStringResource(it.ordinal)) },
-        onItemSelected = { int, _ ->
-            val selection = SettingsTime.fromOrdinalInt(value = int)
-            if (selection != preferencesState.preferences.snoozeTime) {
-                updatePreferences(
-                    preferencesState.preferences.copy(
-                        snoozeTime = selection
+        Spacer(modifier = Modifier.size(16.dp))
+
+        WakiCard {
+            SettingsSwitch(
+                modifier = Modifier.height(space100),
+                title = { Text(text = stringResource(id = R.string.settings_screen_snooze_title)) },
+                subtitle = { Text(text = stringResource(id = R.string.settings_screen_snooze_subtitle)) },
+                state = rememberBooleanSettingState(preferencesState.preferences.isSnoozeEnabled),
+                onCheckedChange = {
+                    updatePreferences(
+                        preferencesState.preferences.copy(
+                            isSnoozeEnabled = it
+                        )
                     )
-                )
-            }
-        }
-    )
-
-    SettingsSwitch(
-        modifier = Modifier.height(space100),
-        title = { Text(text = stringResource(id = R.string.settings_screen_upcoming_alarm_notification_title)) },
-        subtitle = { Text(text = stringResource(id = R.string.settings_screen_upcoming_alarm_notification_subtitle)) },
-        state = rememberBooleanSettingState(preferencesState.preferences.upcomingAlarmNotification),
-        onCheckedChange = {
-            updatePreferences(
-                preferencesState.preferences.copy(
-                    upcomingAlarmNotification = it
-                )
+                }
             )
-            updateCurrentAlarmsToAddOrRemoveUpcomingAlarmNotification(it)
-        }
-    )
 
-    SettingsListDropdown(
-        modifier = Modifier.height(space100),
-        enabled = preferencesState.preferences.upcomingAlarmNotification,
-        state = rememberIntSettingState(defaultValue = preferencesState.preferences.upcomingAlarmNotificationTime.ordinal),
-        title = { Text(text = stringResource(id = R.string.settings_screen_upcoming_alarm_notification_time_title)) },
-        subtitle = { Text(text = stringResource(id = R.string.settings_screen_upcoming_alarm_notification_time_subtitle)) },
-        items = SettingsTime.entries.map { context.getString(it.getStringResource(it.ordinal)) },
-        onItemSelected = { int, _ ->
-            val selection = SettingsTime.fromOrdinalInt(value = int)
-            if (selection != preferencesState.preferences.upcomingAlarmNotificationTime) {
-                updatePreferences(
-                    preferencesState.preferences.copy(
-                        upcomingAlarmNotificationTime = selection
+            SettingsListDropdown(
+                modifier = Modifier.height(space100),
+                enabled = preferencesState.preferences.isSnoozeEnabled,
+                state = rememberIntSettingState(defaultValue = preferencesState.preferences.snoozeTime.ordinal),
+                title = { Text(text = stringResource(id = R.string.settings_screen_snooze_duration_title)) },
+                items = SettingsTime.entries.map { context.getString(it.getStringResource(it.ordinal)) },
+                onItemSelected = { int, _ ->
+                    val selection = SettingsTime.fromOrdinalInt(value = int)
+                    if (selection != preferencesState.preferences.snoozeTime) {
+                        updatePreferences(
+                            preferencesState.preferences.copy(
+                                snoozeTime = selection
+                            )
+                        )
+                    }
+                }
+            )
+
+            SettingsListDropdown(
+                modifier = Modifier.height(space100),
+                state = rememberIntSettingState(defaultValue = preferencesState.preferences.autoSilenceTime.ordinal),
+                title = { Text(text = stringResource(id = R.string.settings_screen_auto_silence_title)) },
+                subtitle = { Text(text = stringResource(id = R.string.settings_screen_auto_silence_subtitle)) },
+                items = SettingsTime.entries.map { context.getString(it.getStringResource(it.ordinal)) },
+                onItemSelected = { int, _ ->
+                    val selection = SettingsTime.fromOrdinalInt(value = int)
+                    if (selection != preferencesState.preferences.autoSilenceTime) {
+                        updatePreferences(
+                            preferencesState.preferences.copy(
+                                autoSilenceTime = selection
+                            )
+                        )
+                    }
+                }
+            )
+        }
+
+        Spacer(modifier = Modifier.size(16.dp))
+
+        WakiCard {
+            SettingsSwitch(
+                modifier = Modifier.height(space100),
+                title = { Text(text = stringResource(id = R.string.settings_screen_upcoming_alarm_notification_title)) },
+                subtitle = { Text(text = stringResource(id = R.string.settings_screen_upcoming_alarm_notification_subtitle)) },
+                state = rememberBooleanSettingState(preferencesState.preferences.upcomingAlarmNotification),
+                onCheckedChange = {
+                    updatePreferences(
+                        preferencesState.preferences.copy(
+                            upcomingAlarmNotification = it
+                        )
                     )
-                )
-            }
-        }
-    )
-
-    SettingsSwitch(
-        modifier = Modifier.height(space100),
-        title = { Text(text = stringResource(id = R.string.settings_screen_delete_title)) },
-        subtitle = { Text(text = stringResource(id = R.string.settings_screen_delete_subtitle)) },
-        state = rememberBooleanSettingState(preferencesState.preferences.deleteAfterGoesOff),
-        onCheckedChange = {
-            updatePreferences(
-                preferencesState.preferences.copy(
-                    deleteAfterGoesOff = it
-                )
+                    updateCurrentAlarmsToAddOrRemoveUpcomingAlarmNotification(it)
+                }
             )
-        }
-    )
 
-    SettingsSwitch(
-        modifier = Modifier.height(space100),
-        title = { Text(text = stringResource(id = R.string.settings_screen_flash_light_title)) },
-        subtitle = { Text(text = stringResource(id = R.string.settings_screen_flash_light_subtitle)) },
-        state = rememberBooleanSettingState(preferencesState.preferences.flashLight),
-        onCheckedChange = {
-            updatePreferences(
-                preferencesState.preferences.copy(
-                    flashLight = it
-                )
+            SettingsListDropdown(
+                modifier = Modifier.height(space100),
+                enabled = preferencesState.preferences.upcomingAlarmNotification,
+                state = rememberIntSettingState(defaultValue = preferencesState.preferences.upcomingAlarmNotificationTime.ordinal),
+                title = { Text(text = stringResource(id = R.string.settings_screen_upcoming_alarm_notification_time_title)) },
+                subtitle = { Text(text = stringResource(id = R.string.settings_screen_upcoming_alarm_notification_time_subtitle)) },
+                items = SettingsTime.entries.map { context.getString(it.getStringResource(it.ordinal)) },
+                onItemSelected = { int, _ ->
+                    val selection = SettingsTime.fromOrdinalInt(value = int)
+                    if (selection != preferencesState.preferences.upcomingAlarmNotificationTime) {
+                        updatePreferences(
+                            preferencesState.preferences.copy(
+                                upcomingAlarmNotificationTime = selection
+                            )
+                        )
+                    }
+                }
             )
-        }
-    )
 
-    SettingsListDropdown(
-        modifier = Modifier.height(space100),
-        state = rememberIntSettingState(defaultValue = preferencesState.preferences.autoSilenceTime.ordinal),
-        title = { Text(text = stringResource(id = R.string.settings_screen_auto_silence_title)) },
-        subtitle = { Text(text = stringResource(id = R.string.settings_screen_auto_silence_subtitle)) },
-        items = SettingsTime.entries.map { context.getString(it.getStringResource(it.ordinal)) },
-        onItemSelected = { int, _ ->
-            val selection = SettingsTime.fromOrdinalInt(value = int)
-            if (selection != preferencesState.preferences.autoSilenceTime) {
-                updatePreferences(
-                    preferencesState.preferences.copy(
-                        autoSilenceTime = selection
+            SettingsSwitch(
+                modifier = Modifier.height(space100),
+                title = { Text(text = stringResource(id = R.string.settings_screen_delete_title)) },
+                subtitle = { Text(text = stringResource(id = R.string.settings_screen_delete_subtitle)) },
+                state = rememberBooleanSettingState(preferencesState.preferences.deleteAfterGoesOff),
+                onCheckedChange = {
+                    updatePreferences(
+                        preferencesState.preferences.copy(
+                            deleteAfterGoesOff = it
+                        )
                     )
-                )
-            }
-        }
-    )
-
-    SettingsMenuLink(
-        modifier = Modifier.height(space100),
-        icon = {
-            Icon(
-                imageVector = Icons.Default.Widgets,
-                contentDescription = stringResource(id = R.string.settings_screen_add_widget_icon)
+                }
             )
-        },
-        title = { Text(text = stringResource(id = R.string.settings_screen_add_widget_title)) },
-        subtitle = { Text(text = stringResource(id = R.string.settings_screen_add_widget_subtitle)) },
-        onClick = {
-            scope.launch {
-                GlanceAppWidgetManager(context).requestPinGlanceAppWidget(
-                    receiver = AppWidgetReceiver::class.java
-                )
-            }
+
+            SettingsSwitch(
+                modifier = Modifier.height(space100),
+                title = { Text(text = stringResource(id = R.string.settings_screen_flash_light_title)) },
+                subtitle = { Text(text = stringResource(id = R.string.settings_screen_flash_light_subtitle)) },
+                state = rememberBooleanSettingState(preferencesState.preferences.flashLight),
+                onCheckedChange = {
+                    updatePreferences(
+                        preferencesState.preferences.copy(
+                            flashLight = it
+                        )
+                    )
+                }
+            )
+
+            SettingsSwitch(
+                modifier = Modifier.height(space100),
+                state = rememberBooleanSettingState(preferencesState.preferences.filteredAlarmList),
+                title = { Text(text = stringResource(id = R.string.settings_screen_sort_alarm_list_title)) },
+                subtitle = { Text(text = stringResource(id = R.string.settings_screen_sort_alarm_list_sub_title)) },
+                onCheckedChange = {
+                    updatePreferences(
+                        preferencesState.preferences.copy(
+                            filteredAlarmList = it
+                        )
+                    )
+                }
+            )
         }
-    )
+
+        Spacer(modifier = Modifier.size(16.dp))
+
+        WakiCard {
+            SettingsMenuLink(
+                modifier = Modifier.height(space100),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Widgets,
+                        contentDescription = stringResource(id = R.string.settings_screen_add_widget_icon)
+                    )
+                },
+                title = { Text(text = stringResource(id = R.string.settings_screen_add_widget_title)) },
+                subtitle = { Text(text = stringResource(id = R.string.settings_screen_add_widget_subtitle)) },
+                onClick = {
+                    scope.launch {
+                        GlanceAppWidgetManager(context).requestPinGlanceAppWidget(
+                            receiver = AppWidgetReceiver::class.java
+                        )
+                    }
+                }
+            )
+        }
+    }
 }
 
 @Composable
 @ThemePreviews
 @FontScalePreviews
 fun AlarmSettingsPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         Column {
             AlarmSettings(
                 preferencesState = PreferencesState(),

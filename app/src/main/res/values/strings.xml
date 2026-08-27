@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">whakaara</string>
+    <string name="app_name">Waki</string>
 
     <string name="bottom_sheet_sub_title">Off</string>
     <string name="bottom_sheet_snooze_switch">Snooze</string>
@@ -78,7 +78,9 @@
     <string name="notification_sub_text_paused">Paused</string>
 
 
-    <string name="widget_next_alarm_description">Shows next active alarm</string>
+    <string name="widget_next_alarm_description">Waki: Next alarm</string>
+    <string name="smart_alarm_title">Smart Alarm</string>
+    <string name="smart_alarm_subtitle">Trigger an alarm based on time, location, distance or context.</string>
     <string name="widget_next_alarm_preview_time">12:59PM</string>
     <string name="widget_next_alarm_preview_title">Wake up now!</string>
     <string name="widget_shortcut_description">App shortcut</string>

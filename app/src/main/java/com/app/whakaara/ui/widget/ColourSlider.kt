@@ -18,7 +18,7 @@ import com.whakaara.core.GeneralUtils.Companion.toColorInt
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.Spacings.space5
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 
 @Composable
 fun ColourSlider(
@@ -52,7 +52,7 @@ fun ColourSlider(
 @Composable
 fun ColourSliderPreview() {
     val redBackground = rememberSaveable { mutableFloatStateOf(1f) }
-    WhakaaraTheme {
+    WakiTheme {
         ColourSlider(label = "Text Colour", valueState = redBackground, color = Color.Red)
     }
 }

@@ -20,9 +20,14 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:model"))
+    implementation(libs.androidx.core.ktx)
     implementation(libs.accompanist.permissions)
     implementation(libs.androidx.material3)
     implementation(libs.gson)
+    implementation(libs.hyperisland.kit)
+    implementation(libs.play.services.location)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     // For AppWidgets support
     implementation(libs.androidx.glance.appwidget)

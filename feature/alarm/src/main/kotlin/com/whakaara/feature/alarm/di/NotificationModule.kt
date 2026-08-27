@@ -23,13 +23,14 @@ class NotificationModule {
         context: Context
     ): NotificationCompat.Builder {
         return NotificationCompat.Builder(context, CHANNEL_ID).apply {
-            color = Color.WHITE
+            color = Color.parseColor("#FF6A3D")
             setSmallIcon(R.drawable.baseline_access_time_24)
             setAutoCancel(true)
             setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             setCategory(CATEGORY_ALARM)
             setSubText(context.getString(R.string.notification_sub_text))
             priority = NotificationCompat.PRIORITY_MAX
+            setOnlyAlertOnce(true)
         }
     }
 

@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Whakaara" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Whakaara" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/dark_green_40</item>
+        <item name="windowSplashScreenBackground">@color/waki_orange</item>
         <item name="postSplashScreenTheme">@style/Theme.Whakaara</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@drawable/animated_logo</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_transparent</item>
     </style>
 </resources>

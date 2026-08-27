@@ -18,6 +18,7 @@ import com.whakaara.core.di.IoDispatcher
 import com.whakaara.data.alarm.AlarmRepository
 import com.whakaara.data.preferences.PreferencesRepository
 import com.whakaara.feature.alarm.receiver.UpcomingAlarmReceiver
+import com.whakaara.feature.alarm.scheduler.AlarmScheduler
 import com.whakaara.feature.alarm.service.AlarmMediaService
 import com.whakaara.feature.alarm.utils.DateUtils
 import com.whakaara.feature.alarm.utils.DateUtils.Companion.getAlarmTimeFormatted
@@ -45,6 +46,7 @@ class AlarmViewModel @Inject constructor(
     private val repository: AlarmRepository,
     private val preferencesRepository: PreferencesRepository,
     private val widgetUpdater: WidgetUpdater,
+    private val alarmScheduler: AlarmScheduler,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : AndroidViewModel(application = app) {
 
@@ -75,23 +77,7 @@ class AlarmViewModel @Inject constructor(
 
     private fun observeTrigger() = viewModelScope.launch(ioDispatcher) {
         repository.triggerFlow.collect {
-            recreateEnabledAlarms()
-        }
-    }
-
-    private suspend fun recreateEnabledAlarms() {
-        val preferences = preferencesRepository.getPreferences()
-        val enabledAlarms = repository.getAllAlarms().filter { it.isEnabled }
-        enabledAlarms.forEach { alarm ->
-            createAlarm(
-                alarmId = alarm.alarmId.toString(),
-                autoSilenceTime = preferences.autoSilenceTime.value,
-                date = alarm.date,
-                upcomingAlarmNotificationEnabled = preferences.upcomingAlarmNotification,
-                upcomingAlarmNotificationTime = preferences.upcomingAlarmNotificationTime.value,
-                repeatAlarmDaily = alarm.repeatDaily,
-                daysOfWeek = alarm.daysOfWeek
-            )
+            alarmScheduler.recreateEnabledAlarms()
         }
     }
 

@@ -13,6 +13,7 @@ import com.whakaara.core.PendingIntentUtils
 import com.whakaara.core.constants.DateUtilsConstants
 import com.whakaara.core.constants.GeneralConstants
 import com.whakaara.core.constants.NotificationUtilsConstants
+import com.whakaara.core.hyperisland.WakiHyperIsland
 import com.whakaara.core.di.ApplicationScope
 import com.whakaara.core.di.IoDispatcher
 import com.whakaara.core.di.MainDispatcher
@@ -355,9 +356,57 @@ class StopwatchViewModel @Inject constructor(
         val builder = stopwatchNotificationBuilder.apply {
             clearActions()
             setUsesChronometer(useChronometer)
+            setContentTitle(app.applicationContext.getString(R.string.stopwatch_notification_title))
+            setContentText(
+                if (useChronometer) {
+                    app.applicationContext.getString(R.string.stopwatch_notification_sub_text)
+                } else {
+                    subText
+                }
+            )
             setSubText(subText)
             setWhen(setWhen)
+            setShowWhen(useChronometer)
+            setOnlyAlertOnce(true)
+            setColor(0xFFFF6A3D.toInt())
             actions.forEach { addAction(it) }
+        }
+        WakiHyperIsland.clearFocusExtras(builder)
+
+        val pauseOrPlay = actions.firstOrNull()
+        val stop = actions.getOrNull(1)
+        if (pauseOrPlay != null && stop != null) {
+            val primary = WakiHyperIsland.IslandAction(
+                key = if (useChronometer) "pause" else "play",
+                label = pauseOrPlay.title?.toString().orEmpty(),
+                pendingIntent = pauseOrPlay.actionIntent!!,
+            )
+            val secondary = WakiHyperIsland.IslandAction(
+                key = "stop",
+                label = stop.title?.toString().orEmpty(),
+                pendingIntent = stop.actionIntent!!,
+            )
+            val label = app.applicationContext.getString(R.string.stopwatch_notification_title)
+            if (useChronometer) {
+                WakiHyperIsland.applyCountUp(
+                    context = app.applicationContext,
+                    builder = builder,
+                    label = label,
+                    startTimeMillis = setWhen,
+                    primary = primary,
+                    secondary = secondary,
+                )
+            } else {
+                WakiHyperIsland.applyStatic(
+                    context = app.applicationContext,
+                    builder = builder,
+                    title = label,
+                    content = stopwatchState.value.formattedTime.ifBlank { subText },
+                    business = "waki_stopwatch_paused",
+                    primary = primary,
+                    secondary = secondary,
+                )
+            }
         }
 
         notificationManager.notify(

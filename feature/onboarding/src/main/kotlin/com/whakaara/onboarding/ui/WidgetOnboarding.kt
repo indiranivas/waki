@@ -23,7 +23,7 @@ import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.Spacings
 import com.whakaara.core.designsystem.theme.Spacings.spaceMedium
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.core.widget.AppWidgetReceiver
 import kotlinx.coroutines.launch
 import net.vbuild.verwoodpages.onboarding.R
@@ -76,7 +76,7 @@ fun WidgetOnboarding(modifier: Modifier = Modifier) {
 @ThemePreviews
 @FontScalePreviews
 fun WidgetOnboardingPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         WidgetOnboarding()
     }
 }

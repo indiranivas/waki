@@ -19,9 +19,10 @@ import androidx.compose.ui.unit.sp
 import com.whakaara.core.constants.DateUtilsConstants.TIMER_INPUT_INITIAL_VALUE
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
-import com.whakaara.core.designsystem.theme.darkGreen
-import com.whakaara.core.designsystem.theme.primaryGreen
+import com.whakaara.core.designsystem.theme.WakiTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
+import com.whakaara.core.designsystem.theme.wakiOrange
 import com.whakaara.model.StringStateEvent
 
 @Composable
@@ -59,12 +60,12 @@ fun TimerInputField(
                 fontWeight = FontWeight.Black
             ),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = darkGreen,
-                unfocusedBorderColor = primaryGreen,
-                focusedTextColor = darkGreen,
-                unfocusedTextColor = darkGreen,
-                focusedContainerColor = primaryGreen,
-                unfocusedContainerColor = primaryGreen
+                focusedBorderColor = wakiOrange,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent
             )
         )
         Text(text = label)
@@ -75,7 +76,7 @@ fun TimerInputField(
 @ThemePreviews
 @FontScalePreviews
 fun TimerInputFieldPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         TimerInputField(
             label = "Hours",
             regex = "",

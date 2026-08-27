@@ -36,7 +36,7 @@ import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.Spacings.space10
 import com.whakaara.core.designsystem.theme.Spacings.spaceMedium
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.feature.alarm.HoursUpdateEvent
 import com.whakaara.feature.alarm.R
 import com.whakaara.feature.alarm.utils.DateUtils.Companion.getAlarmTimeFormatted
@@ -214,7 +214,7 @@ fun BottomSheetDetailsContent(
 fun BottomSheetContentPreview(
     @PreviewParameter(AlarmPreviewProvider::class) alarm: Alarm
 ) {
-    WhakaaraTheme {
+    WakiTheme {
         BottomSheetDetailsContent(
             alarm = alarm,
             timeToAlarm = "timeToAlarm",

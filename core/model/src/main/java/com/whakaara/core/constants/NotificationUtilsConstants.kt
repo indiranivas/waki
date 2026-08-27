@@ -22,6 +22,7 @@ object NotificationUtilsConstants {
     const val NOTIFICATION_TYPE = "notification_type"
     const val NOTIFICATION_TYPE_ALARM = 100
     const val NOTIFICATION_TYPE_TIMER = 101
+    const val NOTIFICATION_TYPE_LOCATION_ALARM = 102
 
     const val INTENT_ALARM_ID = "alarm_id"
     const val INTENT_TIMER_NOTIFICATION_ID = "timer_notification_id"

@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.whakaara.model.onboarding.OnboardingItems
 
 @Composable
@@ -24,6 +25,7 @@ fun OnboardingScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
+        containerColor = Color.Transparent,
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         }

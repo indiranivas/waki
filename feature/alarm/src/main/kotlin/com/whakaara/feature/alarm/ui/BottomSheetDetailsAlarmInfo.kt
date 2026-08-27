@@ -34,7 +34,7 @@ import com.whakaara.core.designsystem.theme.Spacings.space20
 import com.whakaara.core.designsystem.theme.Spacings.space250
 import com.whakaara.core.designsystem.theme.Spacings.spaceXxSmall
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.feature.alarm.R
 import com.whakaara.model.UpdateBottomSheetDetailsAlarmInfo
 
@@ -247,7 +247,7 @@ fun BottomSheetDetailsAlarmInfo(
 @ThemePreviews
 @FontScalePreviews
 private fun BottomSheetAlarmDetailsPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         BottomSheetDetailsAlarmInfo(
             updateBottomSheetDetailsAlarmInfo = UpdateBottomSheetDetailsAlarmInfo()
         )

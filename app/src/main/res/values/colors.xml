@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="dark_green">#436436</color>
-    <color name="dark_green_40">#66436436</color>
+    <color name="waki_orange">#FF6A3D</color>
+    <color name="waki_neutral">#1A1C1E</color>
 </resources>

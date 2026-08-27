@@ -29,8 +29,13 @@ android {
 }
 
 dependencies {
+    api(project(Modules.coreCommon))
     api(project(Modules.coreDatabase))
     api(project(Modules.coreModel))
+
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.play.services.location)
 
     testImplementation(libs.androidx.arch.core.testing)
     testImplementation(libs.junit)

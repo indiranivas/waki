@@ -21,7 +21,7 @@ import com.whakaara.core.GeneralUtils.Companion.showToast
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.Spacings.spaceMedium
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.model.preferences.TimeFormat
 
 @Composable
@@ -70,7 +70,7 @@ fun TimerFullScreen(
 @ThemePreviews
 @FontScalePreviews
 fun TimerFullScreenPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         TimerFullScreen(
             resetTimer = {},
             timeFormat = TimeFormat.TWENTY_FOUR_HOURS

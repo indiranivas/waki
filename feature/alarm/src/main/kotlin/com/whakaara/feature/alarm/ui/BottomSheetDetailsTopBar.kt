@@ -18,7 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.feature.alarm.R
 
 @Composable
@@ -70,7 +70,7 @@ private fun BottomSheetTitle(
 @Preview(showBackground = true)
 @Composable
 fun BottomSheetTopBarPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         BottomSheetDetailsTopBar(
             bottomText = "bottomText",
             title = "title"
@@ -82,7 +82,7 @@ fun BottomSheetTopBarPreview() {
 @ThemePreviews
 @FontScalePreviews
 fun BottomSheetTitlePreview() {
-    WhakaaraTheme {
+    WakiTheme {
         Row(
             modifier = Modifier.height(IntrinsicSize.Min)
         ) {

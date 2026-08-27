@@ -5,9 +5,12 @@ import com.whakaara.feature.alarm.AlarmViewModel
 import com.whakaara.feature.stopwatch.StopwatchViewModel
 import com.whakaara.feature.timer.TimerViewModel
 
+import com.whakaara.feature.alarm.LocationAlarmViewModel
+
 data class AppViewModels(
     val main: MainViewModel,
     val timer: TimerViewModel,
     val stopwatch: StopwatchViewModel,
-    val alarm: AlarmViewModel
+    val alarm: AlarmViewModel,
+    val location: LocationAlarmViewModel
 )

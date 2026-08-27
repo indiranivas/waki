@@ -23,6 +23,8 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.whakaara.core.GeneralUtils.Companion.parseOrDefault
+import com.whakaara.core.hyperisland.WakiHyperIsland
+import com.whakaara.feature.alarm.R
 import com.whakaara.core.LogUtils.logE
 import com.whakaara.core.PendingIntentUtils
 import com.whakaara.core.constants.GeneralConstants
@@ -31,10 +33,12 @@ import com.whakaara.core.constants.NotificationUtilsConstants
 import com.whakaara.core.di.IoDispatcher
 import com.whakaara.core.di.MainDispatcher
 import com.whakaara.data.alarm.AlarmRepository
+import com.whakaara.data.location.LocationAlarmRepository
 import com.whakaara.data.preferences.PreferencesRepository
 import com.whakaara.feature.alarm.receiver.AlarmMediaServiceReceiver
 import com.whakaara.feature.alarm.utils.GeneralUtils
 import com.whakaara.model.alarm.Alarm
+import com.whakaara.model.location.LocationAlarm
 import com.whakaara.model.preferences.GradualSoundDuration
 import com.whakaara.model.preferences.VibrationPattern
 import dagger.hilt.android.AndroidEntryPoint
@@ -61,6 +65,9 @@ class AlarmMediaService : LifecycleService(), MediaPlayer.OnPreparedListener {
 
     @Inject
     lateinit var alarmRepository: AlarmRepository
+
+    @Inject
+    lateinit var locationAlarmRepository: LocationAlarmRepository
 
     @Inject
     lateinit var preferencesRepository: PreferencesRepository
@@ -114,57 +121,126 @@ class AlarmMediaService : LifecycleService(), MediaPlayer.OnPreparedListener {
     private fun play(data: Bundle) {
         lifecycleScope.launch(iODispatcher) {
             val preferences = preferencesRepository.getPreferences()
-            val alarm = alarmRepository.getAlarmById(
-                id = UUID.fromString(data.getString(NotificationUtilsConstants.INTENT_ALARM_ID))
-            )
+            val notificationType = data.getInt(NotificationUtilsConstants.NOTIFICATION_TYPE, NotificationUtilsConstants.NOTIFICATION_TYPE_ALARM)
+            val alarmId = data.getString(NotificationUtilsConstants.INTENT_ALARM_ID)
 
-            withContext(mainDispatcher) {
-                val today = LocalDate.now().dayOfWeek.value - 1
-                if (alarm.daysOfWeek.isNotEmpty() && !alarm.daysOfWeek.contains(today)) {
-                    stopSelf()
-                    return@withContext
-                }
-
-                if (!alarm.repeatDaily || alarm.daysOfWeek.isEmpty()) {
-                    if (alarm.deleteAfterGoesOff) {
-                        deleteAlarmById(alarm.alarmId)
-                    } else {
-                        setIsEnabledToFalse(alarm.alarmId)
-                    }
-                }
-
-                setupMediaPlayer(
-                    soundPath = preferences.alarmSoundPath,
-                    duration = preferences.gradualSoundDuration.inMillis()
-                )
-
-                startForeground(
-                    NotificationUtilsConstants.FOREGROUND_SERVICE_ID,
-                    createAlarmNotification(alarm = alarm),
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
-                )
-
-                if (preferences.isVibrateEnabled) {
-                    vibrate(vibrationPattern = preferences.vibrationPattern)
-                }
-
-                if (!powerManager.isInteractive) {
-                    wakeLock = powerManager.newWakeLock(
-                        PowerManager.PARTIAL_WAKE_LOCK,
-                        GeneralConstants.WAKE_LOCK_TAG
-                    ).apply {
-                        acquire(TimeUnit.MINUTES.toMillis(preferences.autoSilenceTime.value.toLong()))
-                    }
-                }
-
-                // set timeout on service
-                handler.postDelayed(runnable, TimeUnit.MINUTES.toMillis(preferences.autoSilenceTime.value.toLong()))
-
-                if (preferences.flashLight && cameraId != null) {
-                    startFlashlightStrobe()
+            if (notificationType == NotificationUtilsConstants.NOTIFICATION_TYPE_ALARM) {
+                val alarm = alarmRepository.getAlarmById(id = UUID.fromString(alarmId))
+                handleAlarm(alarm, preferences)
+            } else if (notificationType == NotificationUtilsConstants.NOTIFICATION_TYPE_LOCATION_ALARM) {
+                val locationAlarm = locationAlarmRepository.getLocationAlarmById(id = UUID.fromString(alarmId))
+                if (locationAlarm != null) {
+                    handleLocationAlarm(locationAlarm, preferences)
                 }
             }
         }
+    }
+
+    private suspend fun handleAlarm(alarm: Alarm, preferences: com.whakaara.model.preferences.Preferences) {
+        withContext(mainDispatcher) {
+            val today = LocalDate.now().dayOfWeek.value - 1
+            if (alarm.daysOfWeek.isNotEmpty() && !alarm.daysOfWeek.contains(today)) {
+                stopSelf()
+                return@withContext
+            }
+
+            if (!alarm.repeatDaily || alarm.daysOfWeek.isEmpty()) {
+                if (alarm.deleteAfterGoesOff) {
+                    deleteAlarmById(alarm.alarmId)
+                } else {
+                    setIsEnabledToFalse(alarm.alarmId)
+                }
+            }
+
+            setupMediaPlayer(
+                soundPath = preferences.alarmSoundPath,
+                duration = preferences.gradualSoundDuration.inMillis()
+            )
+
+            startForeground(
+                NotificationUtilsConstants.FOREGROUND_SERVICE_ID,
+                createAlarmNotification(alarm = alarm),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
+            )
+
+            triggerCommonEffects(preferences)
+        }
+    }
+
+    private suspend fun handleLocationAlarm(locationAlarm: LocationAlarm, preferences: com.whakaara.model.preferences.Preferences) {
+        withContext(mainDispatcher) {
+            val today = LocalDate.now().dayOfWeek.value - 1
+            if (locationAlarm.daysOfWeek.isNotEmpty() && !locationAlarm.daysOfWeek.contains(today)) {
+                stopSelf()
+                return@withContext
+            }
+
+            setupMediaPlayer(
+                soundPath = resolveAlarmSoundPath(
+                    customSound = locationAlarm.alarmSound,
+                    defaultSound = preferences.alarmSoundPath
+                ),
+                duration = preferences.gradualSoundDuration.inMillis()
+            )
+
+            startForeground(
+                NotificationUtilsConstants.FOREGROUND_SERVICE_ID,
+                createLocationAlarmNotification(locationAlarm = locationAlarm),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
+            )
+
+            triggerCommonEffects(preferences)
+            launchFullScreenActivity(
+                notificationType = NotificationUtilsConstants.NOTIFICATION_TYPE_LOCATION_ALARM,
+                alarmId = locationAlarm.id.toString()
+            )
+        }
+    }
+
+    private fun launchFullScreenActivity(notificationType: Int, alarmId: String? = null, alarm: Alarm? = null) {
+        val fullScreenIntent = Intent().apply {
+            setClassName(applicationContext.packageName, FULL_SCREEN_NOTIFICATION_ACTIVITY)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(NotificationUtilsConstants.NOTIFICATION_TYPE, notificationType)
+            action = NotificationUtilsConstants.INTENT_EXTRA_ACTION_ARBITRARY
+            when {
+                alarm != null -> putExtra(
+                    NotificationUtilsConstants.INTENT_EXTRA_ALARM,
+                    GeneralUtils.convertAlarmObjectToString(alarm)
+                )
+                alarmId != null -> putExtra(NotificationUtilsConstants.INTENT_ALARM_ID, alarmId)
+            }
+        }
+        applicationContext.startActivity(fullScreenIntent)
+    }
+
+    private fun triggerCommonEffects(preferences: com.whakaara.model.preferences.Preferences) {
+        if (preferences.isVibrateEnabled) {
+            vibrate(vibrationPattern = preferences.vibrationPattern)
+        }
+
+        if (!powerManager.isInteractive) {
+            wakeLock = powerManager.newWakeLock(
+                PowerManager.PARTIAL_WAKE_LOCK,
+                GeneralConstants.WAKE_LOCK_TAG
+            ).apply {
+                acquire(TimeUnit.MINUTES.toMillis(preferences.autoSilenceTime.value.toLong()))
+            }
+        }
+
+        // set timeout on service
+        handler.postDelayed(runnable, TimeUnit.MINUTES.toMillis(preferences.autoSilenceTime.value.toLong()))
+
+        if (preferences.flashLight && cameraId != null) {
+            startFlashlightStrobe()
+        }
+    }
+
+    private fun resolveAlarmSoundPath(customSound: String, defaultSound: String): String {
+        val candidate = customSound.trim()
+        if (candidate.isEmpty()) return defaultSound
+        if (candidate.contains(":") || candidate.startsWith("/")) return candidate
+        return defaultSound
     }
 
     private fun setupMediaPlayer(soundPath: String, duration: Long) {
@@ -172,14 +248,21 @@ class AlarmMediaService : LifecycleService(), MediaPlayer.OnPreparedListener {
             volumeShaperConfiguration.apply { setDuration(duration) }
         }
 
-        mediaPlayer.apply {
-            setDataSource(
+        val soundUri = parseOrDefault(soundPath)
+        try {
+            mediaPlayer.setDataSource(
                 applicationContext,
-                parseOrDefault(soundPath)
+                soundUri
             )
-            setOnPreparedListener(this@AlarmMediaService)
-            prepareAsync()
+        } catch (exception: Exception) {
+            logE(message = "Failed to load alarm sound: $soundPath", throwable = exception)
+            mediaPlayer.setDataSource(
+                applicationContext,
+                parseOrDefault("")
+            )
         }
+        mediaPlayer.setOnPreparedListener(this@AlarmMediaService)
+        mediaPlayer.prepareAsync()
     }
 
     private fun deleteAlarmById(alarmId: UUID) {
@@ -241,7 +324,9 @@ class AlarmMediaService : LifecycleService(), MediaPlayer.OnPreparedListener {
         stopFlashlightStrobe()
 
         // cancel fullScreenIntent
-        sendBroadcast(Intent(NotificationUtilsConstants.STOP_FULL_SCREEN_ACTIVITY))
+        sendBroadcast(
+            Intent(NotificationUtilsConstants.STOP_FULL_SCREEN_ACTIVITY).setPackage(packageName)
+        )
     }
 
     private fun createAlarmNotification(alarm: Alarm): Notification {
@@ -253,12 +338,6 @@ class AlarmMediaService : LifecycleService(), MediaPlayer.OnPreparedListener {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra(NotificationUtilsConstants.NOTIFICATION_TYPE, NotificationUtilsConstants.NOTIFICATION_TYPE_ALARM)
             putExtra(NotificationUtilsConstants.INTENT_EXTRA_ALARM, GeneralUtils.convertAlarmObjectToString(alarm))
-
-            /**
-             * Unsure why I need to set an action here.
-             * If I don't, I can't get the extras in the activity this intent starts.
-             * https://stackoverflow.com/questions/15343840/intent-extras-missing-when-activity-started#:~:text=We%20stumbled%20upon,might%20fix%20it.
-             * */
             action = NotificationUtilsConstants.INTENT_EXTRA_ACTION_ARBITRARY
         }
         val fullScreenPendingIntent = PendingIntentUtils.getActivity(
@@ -278,13 +357,107 @@ class AlarmMediaService : LifecycleService(), MediaPlayer.OnPreparedListener {
             flag = PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        return alarmNotificationBuilder.apply {
-            setContentTitle(alarm.title)
+        WakiHyperIsland.clearFocusExtras(alarmNotificationBuilder)
+        val builder = alarmNotificationBuilder.apply {
+            setContentTitle(alarm.title.ifBlank { getString(R.string.notification_alarm_default_title) })
             setContentText(alarm.subTitle)
+            setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText(alarm.subTitle)
+                    .setBigContentTitle(alarm.title.ifBlank { getString(R.string.notification_alarm_default_title) })
+            )
             setFullScreenIntent(fullScreenPendingIntent, true)
             setWhen(alarm.date.timeInMillis)
+            setShowWhen(true)
             setDeleteIntent(stopServicePendingIntent)
-        }.build()
+            clearActions()
+            addAction(
+                0,
+                getString(R.string.notification_alarm_stop_action_label),
+                stopServicePendingIntent
+            )
+        }
+        WakiHyperIsland.applyStatic(
+            context = applicationContext,
+            builder = builder,
+            title = alarm.title.ifBlank { getString(R.string.notification_alarm_default_title) },
+            content = alarm.subTitle,
+            business = "waki_alarm",
+            primary = WakiHyperIsland.IslandAction(
+                key = "stop",
+                label = getString(R.string.notification_alarm_stop_action_label),
+                pendingIntent = stopServicePendingIntent,
+            ),
+            expandOnShow = true,
+        )
+        return builder.build()
+    }
+
+    private fun createLocationAlarmNotification(locationAlarm: LocationAlarm): Notification {
+        val fullScreenIntent = Intent().apply {
+            setClassName(
+                applicationContext.packageName,
+                FULL_SCREEN_NOTIFICATION_ACTIVITY
+            )
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra(NotificationUtilsConstants.NOTIFICATION_TYPE, NotificationUtilsConstants.NOTIFICATION_TYPE_LOCATION_ALARM)
+            putExtra(NotificationUtilsConstants.INTENT_ALARM_ID, locationAlarm.id.toString())
+            action = NotificationUtilsConstants.INTENT_EXTRA_ACTION_ARBITRARY
+        }
+        val pendingIntentRequestCode = locationAlarm.id.hashCode()
+        val fullScreenPendingIntent = PendingIntentUtils.getActivity(
+            applicationContext,
+            pendingIntentRequestCode,
+            fullScreenIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val stopServiceIntent = Intent(applicationContext, AlarmMediaServiceReceiver::class.java).apply {
+            putExtra(NotificationUtilsConstants.INTENT_ALARM_ID, locationAlarm.id.toString())
+            putExtra(NotificationUtilsConstants.NOTIFICATION_TYPE, NotificationUtilsConstants.NOTIFICATION_TYPE_LOCATION_ALARM)
+            putExtra(NotificationUtilsConstants.SERVICE_ACTION, NotificationUtilsConstants.STOP)
+        }
+        val stopServicePendingIntent = PendingIntentUtils.getBroadcast(
+            context = applicationContext,
+            id = pendingIntentRequestCode,
+            intent = stopServiceIntent,
+            flag = PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        WakiHyperIsland.clearFocusExtras(alarmNotificationBuilder)
+        val builder = alarmNotificationBuilder.apply {
+            setContentTitle(locationAlarm.name)
+            setContentText(locationAlarm.address)
+            setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText(locationAlarm.address)
+                    .setBigContentTitle(locationAlarm.name)
+            )
+            setContentIntent(fullScreenPendingIntent)
+            setFullScreenIntent(fullScreenPendingIntent, true)
+            setWhen(System.currentTimeMillis())
+            setShowWhen(true)
+            setDeleteIntent(stopServicePendingIntent)
+            clearActions()
+            addAction(
+                0,
+                getString(R.string.notification_alarm_stop_action_label),
+                stopServicePendingIntent
+            )
+        }
+        WakiHyperIsland.applyStatic(
+            context = applicationContext,
+            builder = builder,
+            title = locationAlarm.name,
+            content = locationAlarm.address,
+            business = "waki_location_alarm",
+            primary = WakiHyperIsland.IslandAction(
+                key = "stop",
+                label = getString(R.string.notification_alarm_stop_action_label),
+                pendingIntent = stopServicePendingIntent,
+            ),
+            expandOnShow = true,
+        )
+        return builder.build()
     }
 
     private fun startFlashlightStrobe(interval: Long = 300L) {

@@ -35,7 +35,7 @@ import com.app.whakaara.logic.WidgetConfigViewModel
 import com.app.whakaara.ui.widget.ColourPicker
 import com.whakaara.core.designsystem.theme.Spacings.space10
 import com.whakaara.core.designsystem.theme.Spacings.spaceMedium
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.data.datastore.PreferencesDataStoreRepository
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -128,7 +128,7 @@ fun WidgetConfigScreen(
         }
     }
 
-    WhakaaraTheme {
+    WakiTheme {
         Scaffold { innerPadding ->
             Column(
                 modifier = Modifier

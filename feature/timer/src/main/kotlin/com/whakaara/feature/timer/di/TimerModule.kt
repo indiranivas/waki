@@ -23,12 +23,13 @@ class TimerModule {
         context: Context
     ): NotificationCompat.Builder {
         return NotificationCompat.Builder(context, NotificationUtilsConstants.CHANNEL_ID).apply {
-            color = Color.WHITE
+            color = Color.parseColor("#FF6A3D")
             setSmallIcon(R.drawable.baseline_access_time_24)
             setCategory(Notification.CATEGORY_ALARM)
             setAutoCancel(false)
             setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             setContentTitle(context.getString(R.string.timer_notification_content_title))
+            setOnlyAlertOnce(true)
         }
     }
 }

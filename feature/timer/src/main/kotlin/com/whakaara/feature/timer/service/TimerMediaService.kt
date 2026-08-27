@@ -20,6 +20,7 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.whakaara.core.GeneralUtils.Companion.parseOrDefault
+import com.whakaara.core.hyperisland.WakiHyperIsland
 import com.whakaara.core.LogUtils.logE
 import com.whakaara.core.PendingIntentUtils
 import com.whakaara.core.constants.GeneralConstants
@@ -175,12 +176,41 @@ class TimerMediaService : LifecycleService(), MediaPlayer.OnPreparedListener {
             intent = intent,
             flag = PendingIntent.FLAG_UPDATE_CURRENT
         )
-        return timerNotificationBuilder.apply {
-            addAction(R.drawable.baseline_cancel_24, applicationContext.getString(R.string.timer_notification_action_label), pendingIntent)
+        val contentText = applicationContext.getString(R.string.timer_notification_content_text)
+        WakiHyperIsland.clearFocusExtras(timerNotificationBuilder)
+        val builder = timerNotificationBuilder.apply {
+            clearActions()
+            setContentTitle(applicationContext.getString(R.string.timer_notification_content_title))
+            setContentText(contentText)
+            setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText(contentText)
+                    .setBigContentTitle(applicationContext.getString(R.string.timer_notification_content_title))
+            )
+            addAction(
+                R.drawable.baseline_cancel_24,
+                applicationContext.getString(R.string.timer_notification_action_label),
+                pendingIntent
+            )
             setFullScreenIntent(fullScreenPendingIntent, true)
             setDeleteIntent(pendingIntent)
-            setContentText(applicationContext.getString(R.string.timer_notification_content_text))
-        }.build()
+            setShowWhen(true)
+            setWhen(System.currentTimeMillis())
+        }
+        WakiHyperIsland.applyStatic(
+            context = applicationContext,
+            builder = builder,
+            title = applicationContext.getString(R.string.timer_notification_content_title),
+            content = contentText,
+            business = "waki_timer_done",
+            primary = WakiHyperIsland.IslandAction(
+                key = "stop",
+                label = applicationContext.getString(R.string.timer_notification_action_label),
+                pendingIntent = pendingIntent,
+            ),
+            expandOnShow = true,
+        )
+        return builder.build()
     }
 
     private fun vibrate(vibrationPattern: VibrationPattern) {

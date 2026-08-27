@@ -40,7 +40,10 @@ import com.whakaara.core.designsystem.theme.Spacings.spaceSmall
 import com.whakaara.core.designsystem.theme.Spacings.spaceXLarge
 import com.whakaara.core.designsystem.theme.Spacings.spaceXSmall
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.WakiCard
+import com.whakaara.core.designsystem.theme.WakiTheme
+import androidx.compose.ui.text.font.FontWeight
+import com.whakaara.core.designsystem.theme.wakiOrange
 import com.whakaara.feature.stopwatch.R
 import com.whakaara.feature.stopwatch.util.DateUtils
 import com.whakaara.model.stopwatch.Lap
@@ -123,7 +126,7 @@ private fun LapCell(
     isMaxDiff: Boolean = false
 ) {
     val diffTextColor = when {
-        isMinDiff -> com.whakaara.core.designsystem.theme.lightGreen
+        isMinDiff -> wakiOrange
         isMaxDiff -> MaterialTheme.colorScheme.error
         else -> Color.Unspecified
     }
@@ -131,35 +134,34 @@ private fun LapCell(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = spaceMedium, end = spaceMedium)
+            .padding(horizontal = spaceMedium, vertical = 4.dp)
     ) {
-        Card(shape = Shapes.small) {
-            Box(
-                modifier = Modifier.padding(top = spaceMedium, bottom = spaceMedium)
+        WakiCard {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        modifier = Modifier.weight(1f),
-                        text = String.format(locale = Locale.ROOT, format = "%02d", index.inc()),
-                        color = diffTextColor,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        modifier = Modifier
-                            .weight(3f)
-                            .padding(start = spaceXLarge, end = spaceMedium),
-                        text = DateUtils.formatTimeForStopwatchLap(lap.time),
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        modifier = Modifier.weight(2f),
-                        text = DateUtils.formatTimeForStopwatchLap(lap.diff),
-                        textAlign = TextAlign.Center
-                    )
-                }
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = String.format(locale = Locale.ROOT, format = "%02d", index.inc()),
+                    color = diffTextColor,
+                    textAlign = TextAlign.Start,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    modifier = Modifier.weight(3f),
+                    text = DateUtils.formatTimeForStopwatchLap(lap.time),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    modifier = Modifier.weight(2f),
+                    text = DateUtils.formatTimeForStopwatchLap(lap.diff),
+                    textAlign = TextAlign.End,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -261,7 +263,7 @@ fun Modifier.customHeight(condition : Boolean, modifier : Modifier.() -> Modifie
 @ThemePreviews
 @FontScalePreviews
 fun StopwatchLapListPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         StopwatchLapList(
             lapList = mutableListOf(
                 Lap(
@@ -286,7 +288,7 @@ fun StopwatchLapListPreview() {
 @ThemePreviews
 @FontScalePreviews
 fun LapCellPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         LapCell(
             index = 1,
             lap = Lap(

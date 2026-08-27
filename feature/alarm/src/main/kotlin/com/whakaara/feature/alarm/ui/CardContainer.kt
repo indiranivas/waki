@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -15,13 +16,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.whakaara.core.designsystem.WakiAnimatedListItem
 import com.whakaara.core.designsystem.theme.AlarmPreviewProvider
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.Spacings.space10
 import com.whakaara.core.designsystem.theme.Spacings.spaceMedium
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.feature.alarm.R
 import com.whakaara.feature.alarm.utils.GeneralUtils.Companion.showToast
 import com.whakaara.model.alarm.Alarm
@@ -44,6 +49,16 @@ fun CardContainerSwipeToDismiss(
     LazyColumn(
         modifier = modifier
     ) {
+        item {
+            Text(
+                text = "YOUR ALARMS",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                letterSpacing = 1.sp,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
+            )
+        }
         if (alarms.isEmpty()) {
             item {
                 Row(
@@ -70,8 +85,9 @@ fun CardContainerSwipeToDismiss(
                     }
                 }
 
-                SwipeToDismissBox(
-                    modifier = Modifier.padding(start = spaceMedium, end = spaceMedium, bottom = space10),
+                WakiAnimatedListItem {
+                    SwipeToDismissBox(
+                        modifier = Modifier.padding(start = spaceMedium, end = spaceMedium, bottom = space10),
                     state = dismissState,
                     enableDismissFromStartToEnd = false,
                     backgroundContent = {
@@ -89,6 +105,7 @@ fun CardContainerSwipeToDismiss(
                         )
                     }
                 )
+                }
             }
         }
     }
@@ -100,7 +117,7 @@ fun CardContainerSwipeToDismiss(
 fun CardContainerSwipeToDismissPreview(
     @PreviewParameter(AlarmPreviewProvider::class) alarm: Alarm
 ) {
-    WhakaaraTheme {
+    WakiTheme {
         CardContainerSwipeToDismiss(
             alarms = listOf(
                 alarm

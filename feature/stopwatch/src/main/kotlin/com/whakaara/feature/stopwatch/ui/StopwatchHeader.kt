@@ -16,7 +16,7 @@ import com.whakaara.core.designsystem.theme.Spacings.spaceMedium
 import com.whakaara.core.designsystem.theme.Spacings.spaceXLarge
 import com.whakaara.core.designsystem.theme.Spacings.spaceXSmall
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.feature.stopwatch.R
 
 @Composable
@@ -61,7 +61,7 @@ fun StopwatchHeader(
 @ThemePreviews
 @FontScalePreviews
 fun StopwatchHeaderPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         StopwatchHeader()
     }
 }

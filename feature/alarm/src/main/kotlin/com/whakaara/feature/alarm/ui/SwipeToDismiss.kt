@@ -25,7 +25,7 @@ import androidx.compose.ui.res.stringResource
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.Spacings.space20
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.feature.alarm.R
 
 @Composable
@@ -71,7 +71,7 @@ fun DismissBackground(
 @ThemePreviews
 @FontScalePreviews
 fun DismissBackgroundPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         DismissBackground(
             dismissState = rememberSwipeToDismissBoxState()
         )

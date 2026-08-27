@@ -20,6 +20,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.res.stringResource
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.Spacings.space275
@@ -28,8 +34,8 @@ import com.whakaara.core.designsystem.theme.Spacings.spaceXLarge
 import com.whakaara.core.designsystem.theme.Spacings.spaceXSmall
 import com.whakaara.core.designsystem.theme.Spacings.spaceXxSmall
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
-import com.whakaara.core.designsystem.theme.primaryGreen
+import com.whakaara.core.designsystem.theme.WakiTheme
+import com.whakaara.core.designsystem.theme.wakiOrange
 import com.whakaara.feature.timer.R
 import com.whakaara.feature.timer.util.DateUtils
 import com.whakaara.model.preferences.TimeFormat
@@ -66,47 +72,65 @@ fun TimerCountdownDisplay(
         ) {
             if (!isSplitMode || isLargeScreen) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(space275),
+                    modifier = Modifier.size(280.dp),
                     progress = { animatedProgress },
-                    color = primaryGreen,
-                    strokeWidth = spaceXSmall
+                    color = wakiOrange,
+                    strokeWidth = 12.dp,
+                    trackColor = wakiOrange.copy(alpha = 0.1f),
+                    strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
                 )
             }
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    style = MaterialTheme.typography.headlineLarge,
+                    style = MaterialTheme.typography.displayLarge.copy(
+                        fontSize = 64.sp,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    ),
                     text = time
                 )
-                Row(
-                    modifier = Modifier.offset(y = if (!isSplitMode) spaceXLarge else spaceNone),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.NotificationsActive,
-                        contentDescription = stringResource(id = R.string.timer_countdown_finish_time_icon_content_description)
-                    )
-                    Text(
-                        modifier = Modifier.padding(start = spaceXxSmall),
-                        text = if (isPaused) {
-                            stringResource(R.string.timer_screen_paused)
-                        } else if (isStart) {
-                            stringResource(R.string.timer_screen_no_timer_set)
-                        } else {
-                            DateUtils.getTimerFinishFormatted(
-                                date = Calendar.getInstance().apply {
-                                    add(
-                                        Calendar.MILLISECOND,
-                                        millisecondsFromTimerInput.toInt()
-                                    )
-                                },
-                                timeFormat = timeFormat
-                            )
-                        }
-                    )
-                }
+                Text(
+                    text = "Timer active", // Label like "Work focus"
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.NotificationsActive,
+                contentDescription = stringResource(id = R.string.timer_countdown_finish_time_icon_content_description),
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = if (isPaused) {
+                    stringResource(R.string.timer_screen_paused)
+                } else if (isStart) {
+                    stringResource(R.string.timer_screen_no_timer_set)
+                } else {
+                    DateUtils.getTimerFinishFormatted(
+                        date = Calendar.getInstance().apply {
+                            add(
+                                Calendar.MILLISECOND,
+                                millisecondsFromTimerInput.toInt()
+                            )
+                        },
+                        timeFormat = timeFormat
+                    )
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+            )
         }
     }
 }
@@ -115,7 +139,7 @@ fun TimerCountdownDisplay(
 @ThemePreviews
 @FontScalePreviews
 fun TimerCountdownDisplayPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         TimerCountdownDisplay(
             progress = 1.0F,
             time = "00:00:00",

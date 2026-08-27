@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.whakaara.core.AppPermissions
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.alorma.compose.settings.storage.base.rememberBooleanSettingState
@@ -36,7 +37,12 @@ import com.whakaara.core.designsystem.theme.Spacings.space100
 import com.whakaara.core.designsystem.theme.Spacings.space80
 import com.whakaara.core.designsystem.theme.Spacings.spaceMedium
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.WakiCard
+import com.whakaara.core.designsystem.theme.WakiTheme
+import com.whakaara.core.designsystem.WakiSection
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import com.whakaara.model.preferences.AppTheme
 import com.whakaara.model.preferences.Preferences
 import com.whakaara.model.preferences.PreferencesState
@@ -57,137 +63,136 @@ fun GeneralSettings(
     val originalAlarmVolume = remember { mutableIntStateOf(audioManager.getStreamVolume(AudioManager.STREAM_ALARM)) }
     val maxValue = remember { audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM) }
 
-    Text(
-        modifier = Modifier.padding(start = spaceMedium, top = spaceMedium, bottom = spaceMedium),
-        style = MaterialTheme.typography.titleMedium,
-        text = stringResource(id = R.string.settings_screen_general_title)
-    )
-
-    SettingsMenuLink(
-        modifier = Modifier.height(space80),
-        icon = {
-            Icon(
-                painter = painterResource(id = R.drawable.outline_chronic_24),
-                contentDescription = stringResource(id = R.string.system_time_icon_content_description)
-            )
-        },
-        title = {
-            Text(text = stringResource(id = R.string.settings_screen_system_time))
-        },
-        onClick = {
-            context.startActivity(Intent(Settings.ACTION_DATE_SETTINGS).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) })
-        }
-    )
-
-    SettingsMenuLink(
-        modifier = Modifier.height(space80),
-        icon = {
-            Icon(
-                imageVector = Icons.Default.Settings,
-                contentDescription = stringResource(id = R.string.settings_screen_app_settings)
-            )
-        },
-        title = { Text(text = stringResource(id = R.string.settings_screen_app_settings)) },
-        onClick = {
-            context.startActivity(
-                intentAppSettings.apply {
-                    data = Uri.fromParts(NotificationUtilsConstants.INTENT_PACKAGE, context.packageName, null)
-                }
-            )
-        }
-    )
-
-    SettingsMenuLink(
-        modifier = Modifier.height(space80),
-        icon = {
-            Icon(
-                imageVector = Icons.Default.BatterySaver,
-                contentDescription = stringResource(id = R.string.settings_screen_battery_optimization_icon_content_description)
-            )
-        },
-        title = { Text(text = stringResource(id = R.string.settings_screen_battery_optimization)) },
-        onClick = {
-            val intent =
-                Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-            context.startActivity(
-                intent.apply {
-                    Uri.fromParts(NotificationUtilsConstants.INTENT_PACKAGE, context.packageName, null)
-                }
-            )
-        }
-    )
-
-    SettingsSlider(
-        title = { Text(text = stringResource(id = R.string.settings_screen_alarm_volume_title, originalAlarmVolume.intValue)) },
-        icon = {
-            Icon(
-                imageVector = Icons.AutoMirrored.Default.VolumeUp,
-                contentDescription = stringResource(id = R.string.settings_screen_alarm_volume_icon)
-            )
-        },
-        state = rememberFloatSettingState(originalAlarmVolume.intValue.toFloat()),
-        steps = maxValue - 2,
-        valueRange = 1f..maxValue.toFloat(),
-        onValueChange = { value ->
-            originalAlarmVolume.intValue = value.roundToInt()
-            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, originalAlarmVolume.intValue, 0)
-        }
-    )
-
-    SettingsListDropdown(
-        modifier = Modifier.height(space80),
-        state = rememberIntSettingState(defaultValue = preferencesState.preferences.appTheme.ordinal),
-        title = { Text(text = stringResource(id = R.string.settings_screen_app_theme_title)) },
-        items = AppTheme.entries.map { it.label },
-        onItemSelected = { int, _ ->
-            val selection = AppTheme.fromOrdinalInt(value = int)
-            if (selection != preferencesState.preferences.appTheme) {
-                updatePreferences(
-                    preferencesState.preferences.copy(
-                        appTheme = selection
+    WakiSection(title = stringResource(id = R.string.settings_screen_general_title)) {
+        WakiCard {
+            SettingsMenuLink(
+                modifier = Modifier.height(space80),
+                icon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_chronic_24),
+                        contentDescription = stringResource(id = R.string.system_time_icon_content_description)
                     )
-                )
-            }
-        }
-    )
+                },
+                title = {
+                    Text(text = stringResource(id = R.string.settings_screen_system_time))
+                },
+                onClick = {
+                    context.startActivity(Intent(Settings.ACTION_DATE_SETTINGS).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) })
+                }
+            )
 
-    SettingsSwitch(
-        modifier = Modifier.height(space100),
-        state = rememberBooleanSettingState(preferencesState.preferences.dynamicTheme),
-        title = { Text(text = stringResource(id = R.string.settings_screen_dynamic_theme_title)) },
-        subtitle = { Text(text = stringResource(id = R.string.settings_screen_dynamic_theme_subtitle)) },
-        onCheckedChange = {
-            updatePreferences(
-                preferencesState.preferences.copy(
-                    dynamicTheme = it
-                )
+            SettingsMenuLink(
+                modifier = Modifier.height(space80),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = stringResource(id = R.string.settings_screen_app_settings)
+                    )
+                },
+                title = { Text(text = stringResource(id = R.string.settings_screen_app_settings)) },
+                onClick = {
+                    context.startActivity(
+                        intentAppSettings.apply {
+                            data = Uri.fromParts(NotificationUtilsConstants.INTENT_PACKAGE, context.packageName, null)
+                        }
+                    )
+                }
+            )
+
+            SettingsMenuLink(
+                modifier = Modifier.height(space80),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.BatterySaver,
+                        contentDescription = stringResource(id = R.string.settings_screen_battery_optimization_icon_content_description)
+                    )
+                },
+                title = { Text(text = stringResource(id = R.string.settings_screen_battery_optimization)) },
+                onClick = {
+                    val intent = if (AppPermissions.isIgnoringBatteryOptimizations(context)) {
+                        AppPermissions.batteryOptimizationSettingsIntent()
+                    } else {
+                        AppPermissions.requestIgnoreBatteryOptimizationsIntent(context)
+                    }
+                    context.startActivity(intent)
+                }
             )
         }
-    )
 
-    SettingsSwitch(
-        modifier = Modifier.height(space100),
-        state = rememberBooleanSettingState(preferencesState.preferences.timeFormat.toBoolean()),
-        title = { Text(text = stringResource(id = R.string.settings_screen_24_hour_format_title)) },
-        subtitle = { Text(text = stringResource(id = R.string.settings_screen_24_hour_format_subtitle)) },
-        onCheckedChange = {
-            updatePreferences(
-                preferencesState.preferences.copy(
-                    timeFormat = it.toTimeFormat()
-                )
+        Spacer(modifier = Modifier.size(16.dp))
+
+        WakiCard {
+            SettingsSlider(
+                title = { Text(text = stringResource(id = R.string.settings_screen_alarm_volume_title, originalAlarmVolume.intValue)) },
+                icon = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.VolumeUp,
+                        contentDescription = stringResource(id = R.string.settings_screen_alarm_volume_icon)
+                    )
+                },
+                state = rememberFloatSettingState(originalAlarmVolume.intValue.toFloat()),
+                steps = maxValue - 2,
+                valueRange = 1f..maxValue.toFloat(),
+                onValueChange = { value ->
+                    originalAlarmVolume.intValue = value.roundToInt()
+                    audioManager.setStreamVolume(AudioManager.STREAM_ALARM, originalAlarmVolume.intValue, 0)
+                }
             )
-            updateAllAlarmSubtitles(it.toTimeFormat())
+
+            SettingsListDropdown(
+                modifier = Modifier.height(space80),
+                state = rememberIntSettingState(defaultValue = preferencesState.preferences.appTheme.ordinal),
+                title = { Text(text = stringResource(id = R.string.settings_screen_app_theme_title)) },
+                items = AppTheme.entries.map { it.label },
+                onItemSelected = { int, _ ->
+                    val selection = AppTheme.fromOrdinalInt(value = int)
+                    if (selection != preferencesState.preferences.appTheme) {
+                        updatePreferences(
+                            preferencesState.preferences.copy(
+                                appTheme = selection
+                            )
+                        )
+                    }
+                }
+            )
+
+            SettingsSwitch(
+                modifier = Modifier.height(space100),
+                state = rememberBooleanSettingState(preferencesState.preferences.dynamicTheme),
+                title = { Text(text = stringResource(id = R.string.settings_screen_dynamic_theme_title)) },
+                subtitle = { Text(text = stringResource(id = R.string.settings_screen_dynamic_theme_subtitle)) },
+                onCheckedChange = {
+                    updatePreferences(
+                        preferencesState.preferences.copy(
+                            dynamicTheme = it
+                        )
+                    )
+                }
+            )
+
+            SettingsSwitch(
+                modifier = Modifier.height(space100),
+                state = rememberBooleanSettingState(preferencesState.preferences.timeFormat.toBoolean()),
+                title = { Text(text = stringResource(id = R.string.settings_screen_24_hour_format_title)) },
+                subtitle = { Text(text = stringResource(id = R.string.settings_screen_24_hour_format_subtitle)) },
+                onCheckedChange = {
+                    updatePreferences(
+                        preferencesState.preferences.copy(
+                            timeFormat = it.toTimeFormat()
+                        )
+                    )
+                    updateAllAlarmSubtitles(it.toTimeFormat())
+                }
+            )
         }
-    )
+    }
 }
 
 @Composable
 @ThemePreviews
 @FontScalePreviews
 fun GeneralSettingsPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         Column {
             GeneralSettings(
                 preferencesState = PreferencesState(),

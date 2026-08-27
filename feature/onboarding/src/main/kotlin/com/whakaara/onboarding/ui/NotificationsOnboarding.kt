@@ -1,124 +1,156 @@
 package com.whakaara.onboarding.ui
 
 import android.Manifest
-import android.content.res.Configuration
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.window.core.layout.WindowSizeClass
-import androidx.window.core.layout.WindowWidthSizeClass
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieClipSpec
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.shouldShowRationale
-import com.whakaara.core.NotificationUtils
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.whakaara.core.AppPermissions
+import com.whakaara.core.designsystem.WakiCard
 import com.whakaara.core.designsystem.theme.FontScalePreviews
-import com.whakaara.core.designsystem.theme.Shapes
-import com.whakaara.core.designsystem.theme.Spacings.space20
-import com.whakaara.core.designsystem.theme.Spacings.space200
-import com.whakaara.core.designsystem.theme.Spacings.spaceMedium
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
-import com.whakaara.core.designsystem.theme.lightBlueAnimation
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.core.rememberPermissionStateSafe
-import net.vbuild.verwoodpages.onboarding.R
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun NotificationsOnboarding(
     modifier: Modifier = Modifier,
-    snackbarHostState: SnackbarHostState,
-    windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    snackbarHostState: SnackbarHostState
 ) {
     val context = LocalContext.current
-    val configuration = LocalConfiguration.current
-    val scope = rememberCoroutineScope()
     val notificationPermissionState = rememberPermissionStateSafe(permission = Manifest.permission.POST_NOTIFICATIONS)
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission(), onResult = {})
-    val displayIcon = windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED || (configuration.orientation != Configuration.ORIENTATION_LANDSCAPE && windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.EXPANDED)
+    val locationPermissions = rememberMultiplePermissionsState(
+        permissions = listOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+    )
+    var backgroundLocationGranted by remember {
+        mutableStateOf(AppPermissions.hasBackgroundLocation(context))
+    }
+    val batteryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        backgroundLocationGranted = AppPermissions.hasBackgroundLocation(context)
+    }
+    val backgroundLocationLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        backgroundLocationGranted = granted || AppPermissions.hasBackgroundLocation(context)
+    }
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            !notificationPermissionState.status.isGranted
+        ) {
+            notificationPermissionState.launchPermissionRequest()
+        }
+    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(all = spaceMedium),
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
     ) {
-        if (displayIcon) {
-            Box {
-                AnimatedNotification(
-                    modifier = Modifier
-                        .size(space200)
-                        .align(Alignment.Center)
-                        .clip(Shapes.medium)
-                        .background(color = lightBlueAnimation),
-                    isCompleted = notificationPermissionState.status.isGranted
-                )
-            }
-            Spacer(modifier = Modifier.height(space20))
-        }
+        Spacer(modifier = Modifier.height(48.dp))
         Text(
-            modifier = Modifier.width(300.dp),
-            text = stringResource(id = R.string.onboarding_notification_title),
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.headlineMedium
+            text = "Let's set things up",
+            style = MaterialTheme.typography.displaySmall,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
         )
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
-            modifier = Modifier.width(300.dp),
-            text = stringResource(id = R.string.onboarding_sub_text),
+            text = "These permissions help Waki work perfectly for you.",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodySmall
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
-        Spacer(modifier = Modifier.height(space20))
-        Button(
-            enabled = !notificationPermissionState.status.isGranted,
-            onClick = {
-                if (notificationPermissionState.status.shouldShowRationale) {
-                    NotificationUtils.snackBarPromptPermission(
-                        scope = scope,
-                        snackBarHostState = snackbarHostState,
-                        context = context
-                    )
-                } else {
-                    launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+
+        Spacer(modifier = Modifier.height(48.dp))
+
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            PermissionRow(
+                title = "Notifications",
+                subtitle = "Send you alarms and alerts",
+                icon = Icons.Default.Notifications,
+                isGranted = notificationPermissionState.status.isGranted,
+                onRequest = { notificationPermissionState.launchPermissionRequest() }
+            )
+
+            PermissionRow(
+                title = "Location",
+                subtitle = "Required for location alarms in the background",
+                icon = Icons.Default.LocationOn,
+                isGranted = locationPermissions.allPermissionsGranted && backgroundLocationGranted,
+                onRequest = {
+                    if (!locationPermissions.allPermissionsGranted) {
+                        locationPermissions.launchMultiplePermissionRequest()
+                    } else if (
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                        !AppPermissions.hasBackgroundLocation(context)
+                    ) {
+                        backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                    }
                 }
-            }
-        ) {
-            Text(
-                text = if (notificationPermissionState.status.isGranted) {
-                    stringResource(id = R.string.onboarding_notification_button_enabled)
-                } else {
-                    stringResource(id = R.string.onboarding_notification_button_not_enabled)
+            )
+
+            PermissionRow(
+                title = "Exact Alarms",
+                subtitle = "Ensure alarms trigger on time",
+                icon = Icons.Default.Star,
+                isGranted = AppPermissions.canScheduleExactAlarms(context)
+            )
+
+            PermissionRow(
+                title = "Battery Optimization",
+                subtitle = "Allow Waki to run reliably in the background",
+                icon = Icons.Default.Settings,
+                isGranted = AppPermissions.isIgnoringBatteryOptimizations(context),
+                onRequest = {
+                    batteryLauncher.launch(
+                        AppPermissions.requestIgnoreBatteryOptimizationsIntent(context)
+                    )
                 }
             )
         }
@@ -126,38 +158,53 @@ fun NotificationsOnboarding(
 }
 
 @Composable
-fun AnimatedNotification(
-    modifier: Modifier = Modifier,
-    isCompleted: Boolean
+fun PermissionRow(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    isGranted: Boolean,
+    onRequest: (() -> Unit)? = null
 ) {
-    val clipSpecs =
-        LottieClipSpec.Progress(
-            min = 0.0f,
-            max = if (isCompleted) 0.975f else 0.45f
-        )
-
-    val preloaderLottieComposition by rememberLottieComposition(
-        LottieCompositionSpec.RawRes(
-            R.raw.notification
-        )
-    )
-
-    LottieAnimation(
-        modifier = modifier,
-        composition = preloaderLottieComposition,
-        iterations = if (isCompleted) 1 else LottieConstants.IterateForever,
-        clipSpec = clipSpecs,
-        restartOnPlay = !isCompleted,
-        speed = if (isCompleted) 0.5f else 0.4f,
-        reverseOnRepeat = !isCompleted
-    )
+    WakiCard(onClick = if (!isGranted && onRequest != null) onRequest else null) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant, androidx.compose.foundation.shape.CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if (isGranted) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Granted",
+                    tint = Color(0xFF2ECC71),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+    }
 }
 
 @Composable
 @ThemePreviews
 @FontScalePreviews
 fun NotificationsOnboardingPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         NotificationsOnboarding(
             snackbarHostState = remember { SnackbarHostState() }
         )

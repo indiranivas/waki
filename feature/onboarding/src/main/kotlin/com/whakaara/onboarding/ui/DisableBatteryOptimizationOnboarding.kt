@@ -1,7 +1,5 @@
 package com.whakaara.onboarding.ui
 
-import android.content.Intent
-import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -11,24 +9,27 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.whakaara.core.AppPermissions
+import com.whakaara.core.designsystem.WakiPrimaryButton
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.Spacings.space20
 import com.whakaara.core.designsystem.theme.Spacings.spaceMedium
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import net.vbuild.verwoodpages.onboarding.R
 
 @Composable
 fun DisableBatteryOptimizationOnboarding(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
     Column(
         modifier = modifier
@@ -50,14 +51,17 @@ fun DisableBatteryOptimizationOnboarding(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.bodySmall
         )
         Spacer(modifier = Modifier.height(space20))
-        Button(
+        WakiPrimaryButton(
+            text = stringResource(id = R.string.onboarding_battery_button),
             onClick = {
-                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                val intent = if (AppPermissions.isIgnoringBatteryOptimizations(context)) {
+                    AppPermissions.batteryOptimizationSettingsIntent()
+                } else {
+                    AppPermissions.requestIgnoreBatteryOptimizationsIntent(context)
+                }
                 launcher.launch(intent)
             }
-        ) {
-            Text(text = stringResource(id = R.string.onboarding_battery_button))
-        }
+        )
     }
 }
 
@@ -65,7 +69,7 @@ fun DisableBatteryOptimizationOnboarding(modifier: Modifier = Modifier) {
 @ThemePreviews
 @FontScalePreviews
 fun DisableBatteryOptimizationOnboardingPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         DisableBatteryOptimizationOnboarding()
     }
 }

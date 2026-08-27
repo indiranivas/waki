@@ -6,10 +6,13 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.navigation
+import com.whakaara.core.designsystem.WakiMotion
 import com.app.whakaara.state.events.AppViewModels
 import com.whakaara.core.LeafScreen
 import com.whakaara.core.RootScreen
 import com.whakaara.feature.alarm.AlarmViewModel
+import com.whakaara.feature.alarm.LocationAlarmViewModel
+import com.whakaara.feature.alarm.navigation.locationAlarmScreen
 import com.whakaara.feature.alarm.navigation.alarmScreen
 import com.whakaara.feature.stopwatch.StopwatchViewModel
 import com.whakaara.feature.stopwatch.navigation.stopwatchScreen
@@ -29,7 +32,11 @@ fun NavGraph(
             RootScreen.Onboarding.route
         } else {
             RootScreen.Alarm.route
-        }
+        },
+        enterTransition = { WakiMotion.tabEnter() },
+        exitTransition = { WakiMotion.tabExit() },
+        popEnterTransition = { WakiMotion.tabEnter() },
+        popExitTransition = { WakiMotion.tabExit() }
     ) {
         addOnboardingRoute(navController = navController)
         addAlarmRoute(
@@ -40,6 +47,10 @@ fun NavGraph(
         )
         addStopwatchRoute(
             viewModel = viewModels.stopwatch
+        )
+        addLocationAlarmRoute(
+            viewModel = viewModels.location,
+            navController = navController
         )
     }
 }
@@ -79,6 +90,21 @@ private fun NavGraphBuilder.addStopwatchRoute(
     ) {
         stopwatchScreen(
             viewModel = viewModel
+        )
+    }
+}
+
+private fun NavGraphBuilder.addLocationAlarmRoute(
+    viewModel: LocationAlarmViewModel,
+    navController: NavController
+) {
+    navigation(
+        route = RootScreen.SmartAlarm.route,
+        startDestination = LeafScreen.SmartAlarm.route
+    ) {
+        locationAlarmScreen(
+            viewModel = viewModel,
+            navController = navController
         )
     }
 }

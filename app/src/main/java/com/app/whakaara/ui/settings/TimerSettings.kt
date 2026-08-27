@@ -34,7 +34,12 @@ import com.whakaara.core.designsystem.theme.Spacings.space80
 import com.whakaara.core.designsystem.theme.Spacings.spaceMedium
 import com.whakaara.core.designsystem.theme.Spacings.spaceXxxxLarge
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.WakiCard
+import com.whakaara.core.designsystem.theme.WakiTheme
+import com.whakaara.core.designsystem.WakiSection
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.unit.dp
 import com.whakaara.model.preferences.GradualSoundDuration
 import com.whakaara.model.preferences.Preferences
 import com.whakaara.model.preferences.PreferencesState
@@ -85,114 +90,116 @@ fun TimerSettings(
             }
         )
 
-    Text(
-        modifier = Modifier.padding(start = spaceMedium, top = spaceMedium, bottom = spaceMedium),
-        style = MaterialTheme.typography.titleMedium,
-        text = stringResource(id = R.string.settings_screen_timer_settings_title)
-    )
-
-    SettingsMenuLink(
-        modifier = Modifier.height(spaceXxxxLarge),
-        icon = {
-            Icon(
-                imageVector = Icons.Default.NotificationsActive,
-                contentDescription = stringResource(id = R.string.settings_screen_ringtone_selection_icon)
-            )
-        },
-        title = {
-            Text(text = stringResource(id = R.string.settings_screen_ringtone_timer_title))
-        },
-        subtitle = {
-            Text(text = "${stringResource(id = R.string.settings_screen_ringtone_subtitle)} ${context.getNameFromUri(currentRingtoneUri)}")
-        },
-        onClick = {
-            ringtonePicker.launch(ringtoneSelectionIntent)
-        }
-    )
-
-    SettingsListDropdown(
-        modifier = Modifier
-            .height(spaceXxxxLarge)
-            .testTag("timer gradual dropdown"),
-        state = rememberIntSettingState(defaultValue = preferencesState.preferences.timerGradualSoundDuration.ordinal),
-        title = { Text(text = stringResource(id = R.string.settings_screen_gradual_volume_increase_title)) },
-        subtitle = { Text(text = stringResource(id = R.string.settings_screen_gradual_volume_increase_subtitle)) },
-        items = GradualSoundDuration.entries.map { context.getString(it.getStringResource(it.ordinal)) },
-        onItemSelected = { int, _ ->
-            val selection = GradualSoundDuration.fromOrdinalInt(value = int)
-            if (selection != preferencesState.preferences.timerGradualSoundDuration) {
-                updatePreferences(
-                    preferencesState.preferences.copy(
-                        timerGradualSoundDuration = selection
+    WakiSection(title = stringResource(id = R.string.settings_screen_timer_settings_title)) {
+        WakiCard {
+            SettingsMenuLink(
+                modifier = Modifier.height(spaceXxxxLarge),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.NotificationsActive,
+                        contentDescription = stringResource(id = R.string.settings_screen_ringtone_selection_icon)
                     )
-                )
-            }
-        }
-    )
-
-    SettingsSwitch(
-        modifier = Modifier
-            .height(spaceXxxxLarge)
-            .testTag("timer vibrate switch"),
-        state = rememberBooleanSettingState(preferencesState.preferences.isVibrationTimerEnabled),
-        title = { Text(text = stringResource(id = R.string.settings_screen_vibrate_title)) },
-        subtitle = { Text(text = stringResource(id = R.string.settings_screen_timer_vibrate_subtitle)) },
-        onCheckedChange = {
-            updatePreferences(
-                preferencesState.preferences.copy(
-                    isVibrationTimerEnabled = it
-                )
+                },
+                title = {
+                    Text(text = stringResource(id = R.string.settings_screen_ringtone_timer_title))
+                },
+                subtitle = {
+                    Text(text = "${stringResource(id = R.string.settings_screen_ringtone_subtitle)} ${context.getNameFromUri(currentRingtoneUri)}")
+                },
+                onClick = {
+                    ringtonePicker.launch(ringtoneSelectionIntent)
+                }
             )
-        }
-    )
 
-    SettingsListDropdown(
-        modifier = Modifier
-            .height(space80)
-            .testTag("timer vibrate dropdown"),
-        enabled = preferencesState.preferences.isVibrationTimerEnabled,
-        state = rememberIntSettingState(defaultValue = preferencesState.preferences.timerVibrationPattern.value),
-        title = { Text(text = stringResource(id = R.string.settings_screen_vibrate_pattern_title)) },
-        items = VibrationPattern.entries.map { context.getString(it.getStringResource(it.ordinal)) },
-        onItemSelected = { int, _ ->
-            val selection = VibrationPattern.fromOrdinalInt(value = int)
-            val vibrationEffect = createWaveForm(selection = selection, repeat = SINGLE)
-            val attributes = VibrationAttributes.Builder().apply {
-                setUsage(VibrationAttributes.USAGE_NOTIFICATION)
-            }.build()
-            vibrator.vibrate(vibrationEffect, attributes)
-            if (selection != preferencesState.preferences.timerVibrationPattern) {
-                updatePreferences(
-                    preferencesState.preferences.copy(
-                        timerVibrationPattern = selection
+            SettingsListDropdown(
+                modifier = Modifier
+                    .height(spaceXxxxLarge)
+                    .testTag("timer gradual dropdown"),
+                state = rememberIntSettingState(defaultValue = preferencesState.preferences.timerGradualSoundDuration.ordinal),
+                title = { Text(text = stringResource(id = R.string.settings_screen_gradual_volume_increase_title)) },
+                subtitle = { Text(text = stringResource(id = R.string.settings_screen_gradual_volume_increase_subtitle)) },
+                items = GradualSoundDuration.entries.map { context.getString(it.getStringResource(it.ordinal)) },
+                onItemSelected = { int, _ ->
+                    val selection = GradualSoundDuration.fromOrdinalInt(value = int)
+                    if (selection != preferencesState.preferences.timerGradualSoundDuration) {
+                        updatePreferences(
+                            preferencesState.preferences.copy(
+                                timerGradualSoundDuration = selection
+                            )
+                        )
+                    }
+                }
+            )
+
+            SettingsSwitch(
+                modifier = Modifier
+                    .height(spaceXxxxLarge)
+                    .testTag("timer vibrate switch"),
+                state = rememberBooleanSettingState(preferencesState.preferences.isVibrationTimerEnabled),
+                title = { Text(text = stringResource(id = R.string.settings_screen_vibrate_title)) },
+                subtitle = { Text(text = stringResource(id = R.string.settings_screen_timer_vibrate_subtitle)) },
+                onCheckedChange = {
+                    updatePreferences(
+                        preferencesState.preferences.copy(
+                            isVibrationTimerEnabled = it
+                        )
                     )
-                )
-            }
-        }
-    )
+                }
+            )
 
-    SettingsSwitch(
-        modifier = Modifier
-            .height(spaceXxxxLarge)
-            .testTag("timer autoRestart switch"),
-        state = rememberBooleanSettingState(preferencesState.preferences.autoRestartTimer),
-        title = { Text(text = stringResource(id = R.string.settings_screen_auto_restart_timer_title)) },
-        subtitle = { Text(text = stringResource(id = R.string.settings_screen_auto_restart_timer_subtitle)) },
-        onCheckedChange = {
-            updatePreferences(
-                preferencesState.preferences.copy(
-                    autoRestartTimer = it
-                )
+            SettingsListDropdown(
+                modifier = Modifier
+                    .height(space80)
+                    .testTag("timer vibrate dropdown"),
+                enabled = preferencesState.preferences.isVibrationTimerEnabled,
+                state = rememberIntSettingState(defaultValue = preferencesState.preferences.timerVibrationPattern.value),
+                title = { Text(text = stringResource(id = R.string.settings_screen_vibrate_pattern_title)) },
+                items = VibrationPattern.entries.map { context.getString(it.getStringResource(it.ordinal)) },
+                onItemSelected = { int, _ ->
+                    val selection = VibrationPattern.fromOrdinalInt(value = int)
+                    val vibrationEffect = createWaveForm(selection = selection, repeat = SINGLE)
+                    val attributes = VibrationAttributes.Builder().apply {
+                        setUsage(VibrationAttributes.USAGE_NOTIFICATION)
+                    }.build()
+                    vibrator.vibrate(vibrationEffect, attributes)
+                    if (selection != preferencesState.preferences.timerVibrationPattern) {
+                        updatePreferences(
+                            preferencesState.preferences.copy(
+                                timerVibrationPattern = selection
+                            )
+                        )
+                    }
+                }
             )
         }
-    )
+
+        Spacer(modifier = Modifier.size(16.dp))
+
+        WakiCard {
+            SettingsSwitch(
+                modifier = Modifier
+                    .height(spaceXxxxLarge)
+                    .testTag("timer autoRestart switch"),
+                state = rememberBooleanSettingState(preferencesState.preferences.autoRestartTimer),
+                title = { Text(text = stringResource(id = R.string.settings_screen_auto_restart_timer_title)) },
+                subtitle = { Text(text = stringResource(id = R.string.settings_screen_auto_restart_timer_subtitle)) },
+                onCheckedChange = {
+                    updatePreferences(
+                        preferencesState.preferences.copy(
+                            autoRestartTimer = it
+                        )
+                    )
+                }
+            )
+        }
+    }
 }
 
 @Composable
 @ThemePreviews
 @FontScalePreviews
 fun TimerSettingsPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         TimerSettings(
             preferencesState = PreferencesState(),
             updatePreferences = {}

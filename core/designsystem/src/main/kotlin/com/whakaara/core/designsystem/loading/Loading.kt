@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.Spacings.spaceXxLarge
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 
 @Composable
 fun Loading(modifier: Modifier = Modifier) {
@@ -34,7 +34,7 @@ fun Loading(modifier: Modifier = Modifier) {
 @ThemePreviews
 @FontScalePreviews
 fun LoadingPreview() {
-    WhakaaraTheme {
+    WakiTheme {
         Loading()
     }
 }

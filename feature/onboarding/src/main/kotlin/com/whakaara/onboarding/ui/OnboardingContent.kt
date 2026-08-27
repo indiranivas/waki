@@ -7,9 +7,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,7 +19,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.whakaara.core.designsystem.WakiPrimaryButton
+import com.whakaara.core.designsystem.WakiScreenBackground
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.Spacings.space80
 import com.whakaara.core.designsystem.theme.Spacings.spaceMedium
@@ -36,8 +38,8 @@ import com.whakaara.core.designsystem.theme.Spacings.spaceSmall
 import com.whakaara.core.designsystem.theme.Spacings.spaceXLarge
 import com.whakaara.core.designsystem.theme.Spacings.spaceXxSmall
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
-import com.whakaara.core.designsystem.theme.darkGreen
+import com.whakaara.core.designsystem.theme.WakiTheme
+import com.whakaara.core.designsystem.theme.wakiOrange
 import com.whakaara.model.onboarding.OnboardingItems
 import kotlinx.coroutines.launch
 import net.vbuild.verwoodpages.onboarding.R
@@ -52,8 +54,9 @@ fun OnboardingContent(
     updatePreferences: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    Column(modifier = modifier.fillMaxSize()) {
-        HorizontalPager(
+    WakiScreenBackground(modifier = modifier) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            HorizontalPager(
             modifier = Modifier
                 .fillMaxSize()
                 .weight(1f),
@@ -84,6 +87,7 @@ fun OnboardingContent(
                 }
             }
         }
+        }
     }
 }
 
@@ -93,42 +97,38 @@ fun BottomSection(
     pagerState: PagerState,
     onButtonClick: () -> Unit = {}
 ) {
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(space80)
-            .padding(
-                vertical = spaceMedium,
-                horizontal = spaceXLarge
-            )
+            .padding(horizontal = 32.dp, vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         PageIndicators(
             pagesSize = pagesSize,
             pagerState = pagerState
         )
 
-        Button(
-            modifier = Modifier.align(Alignment.CenterEnd),
+        Spacer(modifier = Modifier.height(24.dp))
+
+        WakiPrimaryButton(
+            text = if (pagerState.currentPage == 0) {
+                "Let's get started"
+            } else if (pagerState.currentPage == pagesSize - 1) {
+                stringResource(id = R.string.onboarding_button_complete)
+            } else {
+                stringResource(id = R.string.onboarding_button_next)
+            },
             onClick = onButtonClick
-        ) {
-            Text(
-                text = if (pagerState.currentPage == pagesSize - 1) {
-                    stringResource(id = R.string.onboarding_button_complete)
-                } else {
-                    stringResource(id = R.string.onboarding_button_next)
-                }
-            )
-        }
+        )
     }
 }
 
 @Composable
-fun BoxScope.PageIndicators(
+fun PageIndicators(
     pagesSize: Int,
     pagerState: PagerState
 ) {
     Row(
-        modifier = Modifier.align(Alignment.CenterStart),
         horizontalArrangement = Arrangement.spacedBy(spaceSmall),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -143,10 +143,10 @@ private fun Indicator(isSelected: Boolean) {
     val size =
         animateDpAsState(
             targetValue = if (isSelected) spaceMedium else spaceSmall,
-            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+            animationSpec = spring(dampingRatio = 0.82f, stiffness = 380f),
             label = "indicator size"
         )
-    val color = if (isSelected) darkGreen else darkGreen.copy(alpha = 0.5f)
+    val color = if (isSelected) wakiOrange else wakiOrange.copy(alpha = 0.5f)
 
     Box(
         modifier = Modifier
@@ -162,7 +162,7 @@ private fun Indicator(isSelected: Boolean) {
 @FontScalePreviews
 fun OnboardingContentPreview() {
     val pages = OnboardingItems.entries.toTypedArray()
-    WhakaaraTheme {
+    WakiTheme {
         OnboardingContent(
             pages = pages,
             pagerState = rememberPagerState(pageCount = { pages.size }),

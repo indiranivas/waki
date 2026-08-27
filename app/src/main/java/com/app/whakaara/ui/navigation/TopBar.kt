@@ -20,7 +20,7 @@ import com.dokar.sheets.rememberBottomSheetState
 import com.whakaara.core.designsystem.theme.FontScalePreviews
 import com.whakaara.core.designsystem.theme.RoutePreviewProvider
 import com.whakaara.core.designsystem.theme.ThemePreviews
-import com.whakaara.core.designsystem.theme.WhakaaraTheme
+import com.whakaara.core.designsystem.theme.WakiTheme
 import com.whakaara.model.preferences.Preferences
 import com.whakaara.model.preferences.PreferencesState
 import com.whakaara.model.preferences.TimeFormat
@@ -91,7 +91,7 @@ fun TopBar(
 fun TopBarPreview(
     @PreviewParameter(RoutePreviewProvider::class) route: String
 ) {
-    WhakaaraTheme {
+    WakiTheme {
         TopBar(
             route = route,
             preferencesState = PreferencesState(),
